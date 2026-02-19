@@ -1,0 +1,1 @@
+<!DOCTYPE html><html><head><title>⚡️ TERA</title><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#0a0a0a 0%,#1a1a2e 50%,#0f3460 100%);color:#00ffaa;padding:20px;min-height:100vh;}.container{max-width:520px;margin:0
