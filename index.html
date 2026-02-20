@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>⚡️ PAYEDE INT. v20.4 - BOTÕES OK</title>
+<title>⚡️ PAYEDE INT. v20.6 - PRIVADO</title>
 <meta name="viewport" content="width=device-width">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -23,14 +23,15 @@ input:focus{outline:none;border-color:#4caf50;box-shadow:0 0 0 3px rgba(76,175,8
 .status{padding:10px;border-radius:8px;margin:10px 0;}
 .status.success{background:#d4edda;color:#155724;}
 .status.error{background:#f8d7da;color:#721c24;}
+.minhas-carteiras{background:#e8f5e8 !important;border-left:6px solid #28a745 !important;}
 @media(max-width:768px){.login-screen{padding:30px 20px;}}
 </style>
 </head>
 <body>
 <div class="login-screen" id="telaLogin">
   <div class="logo">
-    <h1>⚡️ PAYEDE INT. v20.4</h1>
-    <div style="font-size:14px;opacity:0.8;">Carteira Digital EDE</div>
+    <h1>⚡️ PAYEDE INT. v20.6</h1>
+    <div style="font-size:14px;opacity:0.8;">Carteira Digital EDE - PRIVADA</div>
   </div>
   
   <div class="input-group">
@@ -55,6 +56,7 @@ input:focus{outline:none;border-color:#4caf50;box-shadow:0 0 0 3px rgba(76,175,8
     <button class="btn btn-secondary" onclick="sair()" style="width:auto;padding:10px 20px;">🔐 Sair</button>
   </div>
   
+  <!-- ADMIN (sempre visível) -->
   <div class="card admin-wallet">
     <h3>👑 Admin Master</h3>
     <div class="balance-display">10.000,00 EDE</div>
@@ -62,16 +64,19 @@ input:focus{outline:none;border-color:#4caf50;box-shadow:0 0 0 3px rgba(76,175,8
     <button class="btn btn-success" onclick="copiarAdmin()" style="font-size:14px;">📋 Copiar Admin</button>
   </div>
   
-  <div class="card">
-    <h3>👤 Minha Carteira</h3>
+  <!-- MINHA CARTEIRA ATIVA -->
+  <div class="card minhas-carteiras">
+    <h3>👤 Carteira Ativa</h3>
     <div class="balance-display" id="meuSaldo">0,00 EDE</div>
-    <div id="walletInfo" style="background:#f0f8f0;padding:15px;border-radius:10px;margin:15px 0;display:none;">
-      🆔 <span id="minhaWalletId"></span><br>
-      🔐 <input id="minhaChaveInput" readonly style="font-size:14px;">
+    <div id="walletInfo" style="background:#f0f8f0;padding:15px;border-radius:10px;margin:15px 0;">
+      <strong>🆔 ID:</strong> <span id="minhaWalletId"></span><br>
+      <strong>🔐 Chave:</strong>
+      <input id="minhaChaveInput" readonly style="font-size:14px;">
     </div>
     <button class="btn btn-success" onclick="copiarMinhaChave()">📋 Copiar Minha Chave</button>
   </div>
   
+  <!-- ATIVAR -->
   <div class="card" id="secaoAtivar" style="display:none;">
     <h3>💰 Ativar (R$2 = 10 EDE)</h3>
     <canvas id="qrPicPay" style="display:block;margin:15px auto;width:200px;height:200px;"></canvas>
@@ -80,6 +85,13 @@ input:focus{outline:none;border-color:#4caf50;box-shadow:0 0 0 3px rgba(76,175,8
     <button class="btn btn-primary" onclick="ativar()">🚀 +10 EDE</button>
   </div>
   
+  <!-- MINHAS CARTEIRAS (só as minhas) -->
+  <div class="card">
+    <h3>👛 Minhas Carteiras</h3>
+    <div id="minhasCarteirasLista"></div>
+  </div>
+  
+  <!-- TRANSFERIR -->
   <div class="card">
     <h3>🔀 Transferir</h3>
     <input id="chaveDestino" placeholder="🔑 Chave destino">
@@ -87,36 +99,24 @@ input:focus{outline:none;border-color:#4caf50;box-shadow:0 0 0 3px rgba(76,175,8
     <button class="btn btn-primary" onclick="transferir()">🚀 Transferir</button>
     <div id="statusTransferencia"></div>
   </div>
-  
-  <div class="card">
-    <h3>📊 Todas Carteiras</h3>
-    <div id="listaCarteiras"></div>
-  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script>
-// v20.4 - FUNÇÕES SIMPLES E CLARAS
-let wallets = [];
+// v20.6 - CADA USUÁRIO SÓ VÊ SUAS CARTEIRAS
+let todasWallets = [];  // Todas carteiras (para transferências)
+let minhasWallets = []; // Só minhas carteiras
 let minhaCarteira = null;
 let pagamentos = new Set();
 let contador = 1;
+let usuarioAtual = null;
 
-// 🔧 INICIALIZAÇÃO SIMPLES
 function initApp() {
-  // Carrega de qualquer versão antiga
-  let data = localStorage.getItem('payede_data_v204') || 
-             localStorage.getItem('payede_v203_wallets') ||
-             localStorage.getItem('payede_v202_wallets');
-  
-  if(data) {
-    wallets = JSON.parse(data);
-    contador = parseInt(localStorage.getItem('payede_contador') || '1');
-  }
+  carregarDados();
   
   // Admin sempre existe
-  if(!wallets.find(w => w.id === 'PAY000000')) {
-    wallets.unshift({
+  if(!todasWallets.find(w => w.id === 'PAY000000')) {
+    todasWallets.unshift({
       id: 'PAY000000',
       nome: 'Seylor Senesh',
       privateKey: 'PAYEDE_INT_ADMIN_10000_7b4f2a9c8d3e5f1g2h3i4j5k6l7m8n9o',
@@ -125,18 +125,67 @@ function initApp() {
     });
   }
   
-  atualizarLista();
-  setTimeout(gerarQRCode, 1000);
+  salvarDados();
 }
 
-// 🔑 ACESSAR CARTEIRA
+function carregarDados() {
+  let data = localStorage.getItem('payede_data_v206');
+  if(data) {
+    let parsed = JSON.parse(data);
+    todasWallets = parsed.todas || [];
+    minhasWallets = parsed.minhas || [];
+    contador = parsed.contador || 1;
+    usuarioAtual = parsed.usuario || null;
+  }
+}
+
+function salvarDados() {
+  localStorage.setItem('payede_data_v206', JSON.stringify({
+    todas: todasWallets,
+    minhas: minhasWallets,
+    contador: contador,
+    usuarioAtual: usuarioAtual
+  }));
+  localStorage.setItem('payede_pagamentos_v206', JSON.stringify([...pagamentos]));
+}
+
+function novaCarteira() {
+  let nome = document.getElementById('nomeLogin').value.trim();
+  if(!nome) return alert('Digite seu nome!');
+  
+  contador++;
+  let nova = {
+    id: 'PAY' + contador.toString().padStart(6, '0'),
+    nome: nome,
+    privateKey: 'PAYEDE_v206_' + Date.now() + '_' + Math.random().toString(36).substr(2, 15),
+    balance: 0,
+    status: 'criada',
+    dono: nome  // ← ASSINATURA DO DONO
+  };
+  
+  // Adiciona nas minhas E nas todas
+  minhasWallets.push(nova);
+  todasWallets.push(nova);
+  usuarioAtual = nome;
+  minhaCarteira = nova;
+  
+  mostrarDashboard();
+  salvarDados();
+  copiarMinhaChave();
+  alert(`✅ Carteira ${nova.id} criada!
+💰 Saldo: 0 EDE`);
+}
+
 function acessarCarteira() {
   let nome = document.getElementById('nomeLogin').value.trim();
   let chave = document.getElementById('chaveLogin').value.trim();
   
   if(chave) {
-    minhaCarteira = wallets.find(w => w.privateKey === chave);
+    // Busca por chave
+    minhaCarteira = todasWallets.find(w => w.privateKey === chave);
     if(minhaCarteira) {
+      usuarioAtual = minhaCarteira.dono;
+      minhasWallets = todasWallets.filter(w => w.dono === usuarioAtual);
       mostrarDashboard();
       return;
     }
@@ -145,47 +194,25 @@ function acessarCarteira() {
   }
   
   if(nome) {
-    minhaCarteira = wallets.find(w => w.nome.toLowerCase() === nome.toLowerCase());
-    if(minhaCarteira) {
+    // Busca minhas carteiras
+    minhasWallets = todasWallets.filter(w => w.dono && w.dono.toLowerCase() === nome.toLowerCase());
+    if(minhasWallets.length > 0) {
+      usuarioAtual = nome;
+      minhaCarteira = minhasWallets[0]; // Primeira carteira
       mostrarDashboard();
       return;
     }
   }
   
-  if(nome && confirm('Criar nova carteira?')) {
+  if(nome && confirm('Criar nova carteira privada?')) {
     novaCarteira();
   }
 }
 
-// ➕ NOVA CARTEIRA
-function novaCarteira() {
-  let nome = document.getElementById('nomeLogin').value.trim();
-  if(!nome) {
-    alert('Digite seu nome!');
-    return;
-  }
-  
-  contador++;
-  let nova = {
-    id: 'PAY' + contador.toString().padStart(6, '0'),
-    nome: nome,
-    privateKey: 'PAYEDE_v204_' + Date.now() + '_' + Math.random().toString(36).substr(2, 15),
-    balance: 0,  // ← SEMPRE ZERO
-    status: 'criada'
-  };
-  
-  wallets.push(nova);
-  minhaCarteira = nova;
-  mostrarDashboard();
-  salvarDados();
-  copiarMinhaChave();
-}
-
-// 📊 MOSTRAR DASHBOARD
 function mostrarDashboard() {
   document.getElementById('telaLogin').classList.add('hidden');
   document.getElementById('dashboard').classList.remove('hidden');
-  document.getElementById('nomeUsuarioDash').textContent = minhaCarteira.nome;
+  document.getElementById('nomeUsuarioDash').textContent = usuarioAtual;
   document.getElementById('meuSaldo').textContent = minhaCarteira.balance.toFixed(2) + ' EDE';
   document.getElementById('minhaWalletId').textContent = minhaCarteira.id;
   document.getElementById('minhaChaveInput').value = minhaCarteira.privateKey;
@@ -195,10 +222,30 @@ function mostrarDashboard() {
     document.getElementById('secaoAtivar').style.display = 'block';
   }
   
-  atualizarLista();
+  atualizarMinhasCarteiras();
 }
 
-// 💰 ATIVAR
+function atualizarMinhasCarteiras() {
+  document.getElementById('minhasCarteirasLista').innerHTML = minhasWallets.map(w => `
+    <div style="padding:12px;border:1px solid #ddd;border-radius:8px;margin:8px 0;background:#f0f8f0;cursor:pointer;" 
+         onclick="selecionarCarteira('${w.id}')">
+      <strong>${w.id}</strong><br>${w.nome}<br>
+      <span style="font-size:18px;color:#4caf50;">${w.balance.toFixed(2)} EDE</span>
+    </div>
+  `).join('') || '<div style="text-align:center;color:#666;">Nenhuma outra carteira</div>';
+}
+
+function selecionarCarteira(id) {
+  minhaCarteira = minhasWallets.find(w => w.id === id);
+  document.getElementById('meuSaldo').textContent = minhaCarteira.balance.toFixed(2) + ' EDE';
+  document.getElementById('minhaWalletId').textContent = minhaCarteira.id;
+  document.getElementById('minhaChaveInput').value = minhaCarteira.privateKey;
+  
+  if(minhaCarteira.balance === 0) {
+    document.getElementById('secaoAtivar').style.display = 'block';
+  }
+}
+
 function ativar() {
   let txid = document.getElementById('txidPicPay').value.trim();
   if(!txid) return alert('Digite TXID!');
@@ -207,20 +254,25 @@ function ativar() {
   minhaCarteira.balance += 10;
   minhaCarteira.status = 'ativa';
   pagamentos.add(txid);
-  salvarDados();
   
+  // Atualiza em todas as listas
+  let indexTodas = todasWallets.findIndex(w => w.id === minhaCarteira.id);
+  if(indexTodas > -1) todasWallets[indexTodas] = minhaCarteira;
+  let indexMinhas = minhasWallets.findIndex(w => w.id === minhaCarteira.id);
+  if(indexMinhas > -1) minhasWallets[indexMinhas] = minhaCarteira;
+  
+  salvarDados();
   document.getElementById('meuSaldo').textContent = minhaCarteira.balance.toFixed(2) + ' EDE';
   document.getElementById('txidPicPay').value = '';
-  atualizarLista();
+  atualizarMinhasCarteiras();
   alert('✅ +10 EDE!');
 }
 
-// 🔀 TRANSFERIR
 function transferir() {
   let chaveDest = document.getElementById('chaveDestino').value.trim();
   let valor = parseFloat(document.getElementById('valorTransferir').value);
   
-  let destino = wallets.find(w => w.privateKey === chaveDest);
+  let destino = todasWallets.find(w => w.privateKey === chaveDest);
   if(!destino) return alert('❌ Chave não encontrada!');
   if(minhaCarteira.balance < valor) return alert('❌ Saldo insuficiente!');
   
@@ -228,20 +280,18 @@ function transferir() {
   destino.balance += valor;
   destino.status = 'ativa';
   
+  // Atualiza listas
+  let indexMinhas = minhasWallets.findIndex(w => w.id === minhaCarteira.id);
+  if(indexMinhas > -1) minhasWallets[indexMinhas] = minhaCarteira;
+  let indexTodasDest = todasWallets.findIndex(w => w.id === destino.id);
+  if(indexTodasDest > -1) todasWallets[indexTodasDest] = destino;
+  
   salvarDados();
   document.getElementById('meuSaldo').textContent = minhaCarteira.balance.toFixed(2) + ' EDE';
   document.getElementById('statusTransferencia').innerHTML = '<div class="status success">✅ Transferido!</div>';
-  atualizarLista();
+  atualizarMinhasCarteiras();
 }
 
-// 💾 SALVAR
-function salvarDados() {
-  localStorage.setItem('payede_data_v204', JSON.stringify(wallets));
-  localStorage.setItem('payede_contador', contador);
-  localStorage.setItem('payede_pagamentos', JSON.stringify([...pagamentos]));
-}
-
-// 📋 COPIAR
 function copiarMinhaChave() {
   navigator.clipboard.writeText(document.getElementById('minhaChaveInput').value);
   alert('✅ Chave copiada!');
@@ -252,34 +302,19 @@ function copiarAdmin() {
   alert('✅ Admin copiado!');
 }
 
-// 🔄 LISTA
-function atualizarLista() {
-  document.getElementById('listaCarteiras').innerHTML = wallets.map(w => `
-    <div style="padding:15px;border:1px solid #eee;border-radius:10px;margin:10px 0;background:${
-      w.id === 'PAY000000' ? '#d4edda' : w.status === 'ativa' ? '#e8f5e8' : '#f9f9f9'
-    };">
-      <strong>${w.id}</strong><br>${w.nome}<br>
-      <span style="font-size:20px;color:#4caf50;">${w.balance.toFixed(2)} EDE</span><br>
-      <small>${w.privateKey.slice(0,20)}...</small>
-    </div>
-  `).join('');
-}
-
-// 🚪 SAIR
 function sair() {
   document.getElementById('dashboard').classList.add('hidden');
   document.getElementById('telaLogin').classList.remove('hidden');
   minhaCarteira = null;
+  usuarioAtual = null;
 }
 
-// QR CODE
-function gerarQRCode() {
+setTimeout(() => {
   try {
     QRCode.toCanvas(document.getElementById('qrPicPay'), 'picpay://pay?username=jaedesystemint&amount=2.00');
   } catch(e) {}
-}
+}, 1000);
 
-// INICIAR
 initApp();
 </script>
 </body>
