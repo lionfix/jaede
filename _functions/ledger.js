@@ -1,40 +1,20 @@
-exports.handler = async (event, context) => {
-  // Ledger inicial BH
-  let ledger = {
-    claudio: 20000,
-    padaria: 8000, 
-    mercado: 12000,
-    ze: 5000,
-    maria: 7000,
-    joao: 4000,
-    farmacia: 3000
-  };
-
-  // Carrega ledger salvo (ou usa inicial)
-  try {
-    const saved = await localStorage.getItem('tera-ledger');
-    if (saved) ledger = JSON.parse(saved);
-  } catch(e) {}
-
-  // GET = retorna ledger
-  if (event.httpMethod === 'GET') {
+exports.handler = async (event) => {
+  if (event.httpMethod === 'POST') {
+    const { nome } = JSON.parse(event.body);
+    const endereco = `tera_${nome.toLowerCase().replace(/[^a-z0-9]/g,'')}`;
+    
+    // Cria carteira zero se não existe
+    ledger[endereco] = ledger[endereco] || 0;
+    
     return {
       statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(ledger)
+      body: JSON.stringify({ 
+        endereco, 
+        nomeDisplay: nome,
+        saldo: ledger[endereco]
+      })
     };
   }
-
-  // POST = salva transferências
-  if (event.httpMethod === 'POST') {
-    try {
-      const body = JSON.parse(event.body);
-      localStorage.setItem('tera-ledger', JSON.stringify(body));
-      return { statusCode: 200, body: 'OK' };
-    } catch(e) {
-      return { statusCode: 400, body: 'Erro' };
-    }
-  }
-
+  
   return { statusCode: 405, body: 'Método não permitido' };
 };
