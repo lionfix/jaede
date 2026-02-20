@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>⚡️ PAYEDE v20.0 - SALDO ZERO FORÇADO</title>
+<title>⚡️ PAYEDE INT. v20.1 - Interface Limpa</title>
 <meta name="viewport" content="width=device-width">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -9,18 +9,17 @@ body{font-family:system-ui;background:linear-gradient(135deg,#667eea,#764ba2);mi
 .login-screen{max-width:400px;margin:0 auto;background:white;color:#333;border-radius:20px;padding:40px;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
 .logo{text-align:center;margin-bottom:30px;}
 .logo h1{font-size:28px;background:linear-gradient(135deg,#4caf50,#28a745);background-clip:text;-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-.input-group{margin:20px 0;}
+.input-group{position:relative;margin:20px 0;}
 input{width:100%;padding:18px;border:2px solid #e1e5e9;border-radius:12px;font-size:16px;transition:all 0.3s;}
 input:focus{outline:none;border-color:#4caf50;box-shadow:0 0 0 3px rgba(76,175,80,0.1);}
-.btn{width:100%;padding:18px;border:none;border-radius:12px;font-size:18px;font-weight:600;cursor:pointer;margin:10px 0;}
+.btn{width:100%;padding:18px;border:none;border-radius:12px;font-size:18px;font-weight:600;cursor:pointer;margin:10px 0;transition:all 0.3s;}
 .btn-primary{background:linear-gradient(135deg,#4caf50,#45a049);color:white;}
 .btn-success{background:linear-gradient(135deg,#28a745,#20c997);color:white;}
 .btn-secondary{background:#6c757d;color:white;}
-.btn-danger{background:#f44336;color:white;}
 .card{background:white;border-radius:20px;padding:30px;margin:20px 0;box-shadow:0 10px 30px rgba(0,0,0,0.1);}
 .balance-display{font-size:32px;font-weight:bold;color:#4caf50;text-align:center;margin:20px 0;}
 .hidden{display:none;}
-.admin-wallet{background:#d4edda;border-left:6px solid #28a745;}
+.admin-wallet{background:#d4edda !important;border-left:6px solid #28a745 !important;}
 .status{padding:10px;border-radius:8px;margin:10px 0;}
 .status.success{background:#d4edda;color:#155724;}
 .status.error{background:#f8d7da;color:#721c24;}
@@ -28,29 +27,30 @@ input:focus{outline:none;border-color:#4caf50;box-shadow:0 0 0 3px rgba(76,175,8
 </style>
 </head>
 <body>
+<!-- INTERFACE ORIGINAL PERFEITA -->
 <div class="login-screen" id="telaLogin">
   <div class="logo">
-    <h1>⚡️ PAYEDE v20.0</h1>
+    <h1>⚡️ PAYEDE INT. v20.1</h1>
     <div style="font-size:14px;opacity:0.8;">Carteira Digital EDE</div>
   </div>
   
-  <!-- BOTÃO DE RESET EM DESTAQUE -->
-  <button class="btn btn-danger" onclick="resetCompleto()" style="margin-bottom:20px;">
-    🗑️ LIMPAR TUDO (OBRIGATÓRIO 1x)
-  </button>
-  
   <div class="input-group">
-    <input id="nomeLogin" placeholder="👤 Nome completo">
+    <input id="nomeLogin" placeholder="👤 Nome completo" autocomplete="name">
   </div>
   
   <div class="input-group">
-    <input id="chaveLogin" placeholder="🔑 Chave da carteira" readonly onclick="this.removeAttribute('readonly');this.focus()">
+    <input id="chaveLogin" placeholder="🔑 Chave da carteira (opcional)" readonly onclick="this.removeAttribute('readonly');this.focus()">
   </div>
   
-  <button class="btn btn-primary" onclick="login()">🚀 ACESSAR CARTEIRA</button>
-  <button class="btn btn-success" onclick="criarNovaConta()" style="font-size:14px;padding:12px;">
-    ➕ CRIAR NOVA CARTEIRA
+  <button class="btn btn-primary" onclick="login()">
+    🚀 ACESSAR MINHA CARTEIRA
   </button>
+  
+  <div style="text-align:center;font-size:14px;">
+    <button class="btn btn-secondary" onclick="criarNovaConta()" style="font-size:14px;padding:12px;">
+      ➕ CRIAR NOVA CARTEIRA
+    </button>
+  </div>
 </div>
 
 <div id="dashboard" class="hidden">
@@ -59,124 +59,128 @@ input:focus{outline:none;border-color:#4caf50;box-shadow:0 0 0 3px rgba(76,175,8
     <button class="btn btn-secondary" onclick="logout()" style="width:auto;padding:10px 20px;">🔐 Sair</button>
   </div>
   
+  <!-- ADMIN -->
   <div class="card admin-wallet">
-    <h3>👑 Admin Master</h3>
-    <div class="balance-display">10.000,00 EDE</div>
-    <div>PAYEDE_INT_ADMIN_10000_7b4f2a9c8d3e5f1g2h3i4j5k6l7m8n9o</div>
-    <button class="btn btn-success" onclick="copiarAdminChave()">📋 Copiar Admin</button>
+    <h3>👑 Admin Master - Seylor Senesh</h3>
+    <div class="balance-display" id="adminSaldo">10.000,00 EDE</div>
+    <div style="font-size:14px;">
+      🆔 PAY000000 | 🔐 PAYEDE_INT_ADMIN_10000_7b4f2a9c8d3e5f1g2h3i4j5k6l7m8n9o
+    </div>
+    <button class="btn btn-success" onclick="copiarAdminChave()" style="font-size:14px;">📋 Copiar Chave Admin</button>
   </div>
   
+  <!-- MINHA CARTEIRA -->
   <div class="card">
     <h3>👤 Minha Carteira</h3>
     <div class="balance-display" id="meuSaldo">0,00 EDE</div>
     <div id="walletInfo" style="background:#f0f8f0;padding:15px;border-radius:10px;margin:15px 0;display:none;">
-      🆔 <span id="minhaWalletId"></span><br>
-      🔐 <input id="minhaChaveInput" readonly style="font-size:14px;">
+      <strong>🆔 ID:</strong> <span id="minhaWalletId"></span><br>
+      <strong>🔐 Chave:</strong>
     </div>
+    <input id="minhaChaveInput" readonly style="font-size:14px;">
     <button class="btn btn-success" onclick="copiarMinhaChave()">📋 Copiar Minha Chave</button>
   </div>
   
+  <!-- ATIVAR -->
   <div class="card" id="secaoAtivar" style="display:none;">
-    <h3>💰 Ativar (R$2 = 10 EDE)</h3>
+    <h3>💰 Ativar Carteira (R$2 = 10 EDE)</h3>
     <canvas id="qrPicPay" style="display:block;margin:15px auto;width:200px;height:200px;"></canvas>
-    <div style="text-align:center;font-size:18px;font-weight:bold;margin:15px 0;">R$ 2,00 PicPay</div>
-    <input id="txidPicPay" placeholder="📋 ID transação">
-    <button class="btn btn-primary" onclick="ativarEDE()">🚀 +10 EDE</button>
+    <div style="text-align:center;font-size:18px;font-weight:bold;margin:15px 0;">R$ 2,00 PicPay Digital</div>
+    <input id="txidPicPay" placeholder="📋 ID da transação PicPay">
+    <button class="btn btn-primary" onclick="ativarEDE()">🚀 Ativar +10 EDE</button>
   </div>
   
+  <!-- TRANSFERIR -->
   <div class="card">
-    <h3>🔀 Transferir</h3>
-    <input id="chaveDestino" placeholder="🔑 Chave destino">
-    <input id="valorTransferir" type="number" step="0.01" placeholder="💰 Valor EDE">
+    <h3>🔀 Transferir EDE</h3>
+    <input id="chaveDestino" placeholder="🔑 Chave do destinatário">
+    <input id="valorTransferir" type="number" step="0.01" min="0.01" placeholder="💰 Valor EDE">
     <button class="btn btn-primary" onclick="transferirEDE()">🚀 Transferir</button>
     <div id="statusTransferencia"></div>
   </div>
   
+  <!-- LISTA -->
   <div class="card">
-    <h3>📊 Todas Carteiras</h3>
+    <h3>📊 Todas as Carteiras</h3>
     <div id="listaCarteiras"></div>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script>
-// v20.0 - VARIÁVEIS GLOBAIS SIMPLES
+// ====================================================================
+// v20.1 - LIMPO + SALDO 0 AUTOMÁTICO (SEM BOTÃO VISÍVEL)
+// ====================================================================
+
 let wallets = [];
 let minhaCarteira = null;
 let pagamentosPicPay = new Set();
 let totalVendas = 0;
 
-// 🔥 RESET COMPLETO - CHAVE ÚNICA
-function resetCompleto() {
-  if(!confirm('🗑️ LIMPAR TUDO?\nIsso apaga todas as carteiras!')) return;
-  
-  localStorage.removeItem('payede_v20_wallets');
-  localStorage.removeItem('payede_v20_pagamentos');
-  localStorage.removeItem('payede_v20_vendas');
-  localStorage.removeItem('payede_v20_setup');
-  
-  alert('✅ LIMPO! Recarregue a página (F5)');
-  wallets = [];
-  minhaCarteira = null;
-  pagamentosPicPay.clear();
-  totalVendas = 0;
+// 🔧 AUTO-RESET INVISÍVEL na primeira execução
+if(!localStorage.getItem('payede_v20.1_init')) {
+  localStorage.clear();
+  localStorage.setItem('payede_v20.1_init', 'true');
 }
 
 // 🔧 INICIALIZAÇÃO
 function init() {
-  let walletsData = localStorage.getItem('payede_v20_wallets');
+  let data = localStorage.getItem('payede_v201_wallets');
   
-  if(walletsData) {
-    wallets = JSON.parse(walletsData);
-    pagamentosPicPay = new Set(JSON.parse(localStorage.getItem('payede_v20_pagamentos') || '[]'));
-    totalVendas = parseInt(localStorage.getItem('payede_v20_vendas') || '0');
+  if(data) {
+    wallets = JSON.parse(data);
+    let pagData = localStorage.getItem('payede_v201_pagamentos');
+    if(pagData) pagamentosPicPay = new Set(JSON.parse(pagData));
+    totalVendas = parseInt(localStorage.getItem('payede_v201_vendas') || '0');
   }
   
-  // ✅ FORÇA ZERO EM TODAS NÃO-ADMIN
-  wallets.forEach(wallet => {
+  // 🚨 FORÇA ZERO EM TODAS NÃO-ADMIN
+  wallets.forEach(function(wallet) {
     if(wallet.id !== 'PAY000000') {
       wallet.balance = 0;
-      wallet.status = 'criada';
+      wallet.status = wallet.balance > 0 ? 'ativa' : 'criada';
     }
   });
   
-  // ✅ ADMIN
+  // ✅ GARANTE ADMIN
   if(!wallets.find(w => w.id === 'PAY000000')) {
     wallets.unshift({
       id: 'PAY000000',
       nome: 'Seylor Senesh',
       privateKey: 'PAYEDE_INT_ADMIN_10000_7b4f2a9c8d3e5f1g2h3i4j5k6l7m8n9o',
       balance: 10000,
-      status: 'admin'
+      status: 'admin',
+      data: new Date().toLocaleString('pt-BR')
     });
   }
   
   salvarTudo();
+  setTimeout(gerarQR, 500);
 }
 
-// ✅ CRIAR CARTEIRA - SEMPRE ZERO
 function criarNovaCarteira(nome) {
   totalVendas++;
   let id = `PAY${totalVendas.toString().padStart(6, '0')}`;
-  let chave = `PAYEDE_v20_${Date.now()}_${Math.random().toString(36).substr(2, 20)}`;
+  let chave = `PAYEDE_v201_${Date.now()}_${Math.random().toString(36).substr(2, 20)}`;
   
-  // ZERO FORÇADO 3 VEZES
+  // 🔥 SALDO ZERO FORÇADO 4 VEZES
   let novaCarteira = {
     id: id,
     nome: nome,
     privateKey: chave,
-    balance: 0,
+    balance: 0,        // ← 1
     status: 'criada',
     data: new Date().toLocaleString('pt-BR')
   };
-  novaCarteira.balance = 0; // FORÇA 2
-  novaCarteira.balance = parseFloat(0); // FORÇA 3
+  
+  novaCarteira.balance = 0;           // ← 2
+  novaCarteira.balance = parseFloat(0); // ← 3
+  novaCarteira.balance = Number(0);    // ← 4
   
   wallets.push(novaCarteira);
   minhaCarteira = novaCarteira;
   mostrarDashboard();
   salvarTudo();
-  alert(`✅ CRIADA: ${id}\nSaldo: ${novaCarteira.balance} EDE\nChave: ${chave}`);
 }
 
 function login() {
@@ -185,16 +189,16 @@ function login() {
   
   if(chave) {
     minhaCarteira = wallets.find(w => w.privateKey === chave);
-  } else {
+  } else if(nome) {
     minhaCarteira = wallets.find(w => w.nome.toLowerCase() === nome.toLowerCase());
   }
   
   if(minhaCarteira) {
     mostrarDashboard();
-  } else if(nome && confirm('Criar nova carteira com saldo ZERO?')) {
+  } else if(nome && confirm('Carteira não encontrada. Criar nova?')) {
     criarNovaCarteira(nome);
   } else {
-    alert('Nome ou chave inválida!');
+    alert('❌ Digite nome ou chave!');
   }
 }
 
@@ -210,13 +214,14 @@ function mostrarDashboard() {
   if(minhaCarteira.balance === 0) {
     document.getElementById('secaoAtivar').style.display = 'block';
   }
+  
   atualizarLista();
 }
 
 function ativarEDE() {
   let txid = document.getElementById('txidPicPay').value.trim();
-  if(!txid) return alert('Digite TXID!');
-  if(pagamentosPicPay.has(txid)) return alert('TXID já usado!');
+  if(!txid) return alert('❌ Digite ID da transação!');
+  if(pagamentosPicPay.has(txid)) return alert('❌ Pagamento já usado!');
   
   minhaCarteira.balance += 10;
   minhaCarteira.status = 'ativa';
@@ -226,67 +231,81 @@ function ativarEDE() {
   document.getElementById('meuSaldo').textContent = `${minhaCarteira.balance.toFixed(2)} EDE`;
   document.getElementById('txidPicPay').value = '';
   atualizarLista();
-  alert(`✅ +10 EDE\nNovo saldo: ${minhaCarteira.balance}`);
+  alert(`✅ +10 EDE ativados!\nNovo saldo: ${minhaCarteira.balance.toFixed(2)} EDE`);
 }
 
 function transferirEDE() {
   let chaveDest = document.getElementById('chaveDestino').value.trim();
   let valor = parseFloat(document.getElementById('valorTransferir').value);
   
+  if(!chaveDest || valor <= 0) return alert('❌ Dados inválidos!');
+  
   let destino = wallets.find(w => w.privateKey === chaveDest);
-  if(!destino) return alert('Chave inválida!');
-  if(minhaCarteira.balance < valor) return alert('Saldo insuficiente!');
+  if(!destino) return alert('❌ Chave inválida!');
+  if(minhaCarteira.balance < valor) return alert('❌ Saldo insuficiente!');
   
   minhaCarteira.balance -= valor;
   destino.balance += valor;
   salvarTudo();
   
   document.getElementById('meuSaldo').textContent = `${minhaCarteira.balance.toFixed(2)} EDE`;
-  document.getElementById('statusTransferencia').innerHTML = `<div class="status success">✅ ${valor.toFixed(2)} EDE → ${destino.nome}</div>`;
+  document.getElementById('statusTransferencia').innerHTML = 
+    `<div class="status success">✅ ${valor.toFixed(2)} EDE → ${destino.nome}</div>`;
+  document.getElementById('chaveDestino').value = '';
+  document.getElementById('valorTransferir').value = '';
   atualizarLista();
 }
 
 function atualizarLista() {
-  document.getElementById('listaCarteiras').innerHTML = wallets.map(w => `
+  let html = wallets.map(w => `
     <div style="padding:15px;border:1px solid #eee;border-radius:10px;margin:10px 0;background:${
-      w.id === 'PAY000000' ? '#d4edda' : w.status === 'ativa' ? '#e8f5e8' : '#f9f9f9'
+      w.id === 'PAY000000' ? '#d4edda' : 
+      w.status === 'ativa' ? '#e8f5e8' : '#f9f9f9'
     };">
-      <strong>${w.id}</strong><br>${w.nome}<br>
-      <span style="font-size:20px;color:#4caf50;">${w.balance.toFixed(2)} EDE</span><br>
-      <small>${w.privateKey.slice(0,20)}...</small>
+      <div style="font-weight:bold;">${w.id}</div>
+      <div>${w.nome}</div>
+      <div style="font-size:20px;color:#4caf50;">${w.balance.toFixed(2)} EDE</div>
+      <div style="font-size:12px;">${w.privateKey.slice(0,20)}...</div>
     </div>
   `).join('');
+  document.getElementById('listaCarteiras').innerHTML = html;
 }
 
 function salvarTudo() {
-  localStorage.setItem('payede_v20_wallets', JSON.stringify(wallets));
-  localStorage.setItem('payede_v20_pagamentos', JSON.stringify([...pagamentosPicPay]));
-  localStorage.setItem('payede_v20_vendas', totalVendas);
+  localStorage.setItem('payede_v201_wallets', JSON.stringify(wallets));
+  localStorage.setItem('payede_v201_pagamentos', JSON.stringify([...pagamentosPicPay]));
+  localStorage.setItem('payede_v201_vendas', totalVendas);
+}
+
+function gerarQR() {
+  try {
+    QRCode.toCanvas(document.getElementById('qrPicPay'), 'picpay://pay?username=jaedesystemint&amount=2.00');
+  } catch(e) {
+    console.log('QR carregando...');
+  }
 }
 
 function copiarMinhaChave() {
-  navigator.clipboard.writeText(document.getElementById('minhaChaveInput').value);
-  alert('✅ Chave copiada!');
+  navigator.clipboard.writeText(document.getElementById('minhaChaveInput').value).then(() => {
+    alert('✅ Chave copiada!');
+  });
 }
 
 function copiarAdminChave() {
-  navigator.clipboard.writeText('PAYEDE_INT_ADMIN_10000_7b4f2a9c8d3e5f1g2h3i4j5k6l7m8n9o');
-  alert('✅ Admin copiado!');
+  navigator.clipboard.writeText('PAYEDE_INT_ADMIN_10000_7b4f2a9c8d3e5f1g2h3i4j5k6l7m8n9o').then(() => {
+    alert('✅ Chave Admin copiada!');
+  });
 }
 
 function logout() {
   document.getElementById('dashboard').classList.add('hidden');
   document.getElementById('telaLogin').classList.remove('hidden');
+  document.getElementById('nomeLogin').value = '';
+  document.getElementById('chaveLogin').value = '';
   minhaCarteira = null;
 }
 
-setTimeout(() => {
-  try {
-    QRCode.toCanvas(document.getElementById('qrPicPay'), 'picpay://pay?username=jaedesystemint&amount=2.00');
-  } catch(e) {}
-}, 1000);
-
-// INICIA
+// 🚀 INICIA AUTOMATICAMENTE
 init();
 </script>
 </body>
