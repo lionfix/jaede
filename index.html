@@ -1,1 +1,168 @@
-<!DOCTYPE html><html><head><title>⚡️ TERA</title><style>*{margin:0;padding:0;box-sizing:border-box;}body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#0a0a0a 0%,#1a1a2e 50%,#0f3460 100%);color:#00ffaa;padding:20px;min-height:100vh;}.container{max-width:520px;margin:0 auto;}h1{text-align:center;margin-bottom:25px;font-size:34px;background:linear-gradient(45deg,#00ffaa,#00cc88);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 30px rgba(0,255,170,0.5);font-weight:700;}.status{background:linear-gradient(145deg,rgba(0,255,170,0.1),rgba(0,255,170,0.05));backdrop-filter:blur(20px);padding:22px;border-radius:20px;margin-bottom:25px;border:1px solid rgba(0,255,170,0.2);box-shadow:0 10px 40px rgba(0,255,170,0.15);text-align:center;}.wallet{display:flex;gap:12px;margin-bottom:25px;flex-wrap:wrap;}input{flex:1;min-width:85px;padding:16px;border:1px solid rgba(0,255,170,0.3);border-radius:16px;background:rgba(0,0,0,0.6);color:#00ffaa;font-size:16px;font-weight:500;box-shadow:0 6px 20px rgba(0,0,0,0.4);transition:all 0.3s;}input:focus{outline:none;box-shadow:0 0 0 3px rgba(0,255,170,0.2);}button{background:linear-gradient(45deg,#00ffaa,#00cc88);border:none;padding:20px 35px;border-radius:20px;color:#0a0a0a;font-size:18px;font-weight:700;cursor:pointer;transition:all 0.3s;box-shadow:0 8px 30px rgba(0,255,170,0.4);}button:hover{transform:translateY(-4px);box-shadow:0 15px 45px rgba(0,255,170,0.6);}button:disabled{opacity:0.5;cursor:not-allowed;}.log{background:rgba(0,0,0,0.8);backdrop-filter:blur(15px);padding:22px;border-radius:20px;height:340px;overflow-y:auto;font-family:'Courier New',monospace;font-size:14px;line-height:1.6;border:1px solid rgba(0,255,170,0.15);}</style></head><body><div class="container"><h1>⚡️ TERA</h1><div class="status" id="status">⚡️ Carregando TERA v2.0...</div><div class="wallet"><input id="from" placeholder="De:" value="claudio"><input id="to" placeholder="Para:" value="padaria"><input id="amount" placeholder="100" type="number" min="1" value="100"><button id="transferBtn" onclick="sendTera()">⚡️ Transferir</button></div><div class="log" id="log">⚡️ TERA v2.0 - Comunidade BH<br>⏳ Iniciando blockchain local...</div></div><script>let ledger=JSON.parse(localStorage.getItem('tera-ledger'))||{claudio:20000,padaria:8000,mercado:12000,ze:5000,maria:7000,joao:4000,farmácia:3000};function saveLedger(){localStorage.setItem('tera-ledger',JSON.stringify(ledger));}function updateStatus(){const total=Object.values(ledger).reduce((a,b)=>a+b,0);document.getElementById('status').innerHTML=`⚡️ Total: ${total.toLocaleString()} TB | Claudio: ${ledger.claudio||0}TB | Padaria: ${ledger.padaria||0}TB`;}function sendTera(){const btn=document.getElementById('transferBtn');const from=document.getElementById('from').value.trim();const to=document.getElementById('to').value.trim();const amount=parseInt(document.getElementById('amount').value)||0;if(amount<=0){log('❌ Valor inválido');return;}if(!ledger[from]||ledger[from]<amount){log('❌ Saldo insuficiente');return;}btn.disabled=true;btn.textContent='⏳ Processando...';setTimeout(()=>{ledger[from]-=amount;ledger[to]=(ledger[to]||0)+amount;saveLedger();log(`✅ ${amount}TB ${from}→${to}`);updateStatus();btn.disabled=false;btn.textContent='⚡️ Transferir';},1000);}function log(msg){const logEl=document.getElementById('log');logEl.innerHTML+=`<div>${new Date().toLocaleTimeString()}: ${msg}</div>`;logEl.scrollTop=logEl.scrollHeight;}updateStatus();</script></body></html>
+<!DOCTYPE html>
+<html>
+<head>
+<title>⚡️ TERA v4.0 WALLET</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#0a0a0a 0%,#1a1a2e 50%,#16213e 100%);color:#fff;min-height:100vh;padding:20px;}
+.container{max-width:1200px;margin:0 auto;}
+h1{text-align:center;font-size:2.5em;margin-bottom:30px;background:linear-gradient(45deg,#ff6b6b,#4ecdc4,#45b7d1);background-size:200% 200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:gradient 3s ease infinite;}
+@keyframes gradient{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
+.card{background:rgba(255,255,255,0.1);backdrop-filter:blur(20px);border-radius:20px;padding:30px;margin-bottom:30px;border:1px solid rgba(255,255,255,0.2);}
+.wallet-section{margin-bottom:30px;}
+#carteira-section{background:linear-gradient(135deg,rgba(255,107,107,0.2),rgba(78,205,196,0.2));border:2px solid rgba(255,107,107,0.5);}
+input,button{width:100%;padding:15px;margin:10px 0;border:none;border-radius:12px;font-size:16px;font-family:inherit;transition:all 0.3s;}
+input{background:rgba(255,255,255,0.9);color:#333;}
+button{background:linear-gradient(45deg,#ff6b6b,#4ecdc4);color:white;cursor:pointer;font-weight:bold;text-transform:uppercase;}
+button:hover{transform:translateY(-2px);box-shadow:0 10px 25px rgba(255,107,107,0.4);}
+.ledger{max-height:400px;overflow-y:auto;background:rgba(0,0,0,0.3);border-radius:15px;padding:20px;}
+.tx{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.1);font-size:14px;}
+.tx:last-child{border-bottom:none;}
+.from,to{font-weight:bold;color:#4ecdc4;}
+.amount{font-size:18px;}
+.positive{color:#4ecdc4;}
+.negative{color:#ff6b6b;}
+.balance{display:flex;justify-content:space-between;align-items:center;font-size:24px;font-weight:bold;margin:20px 0;background:rgba(255,255,255,0.1);padding:20px;border-radius:15px;}
+@media(max-width:768px){.container{padding:10px;}h1{font-size:2em;}}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>⚡️ TERA v4.0 WALLET</h1>
+
+<!-- 👇 NOVA SEÇÃO CARTEIRA (SALVA NO LOCALSTORAGE) -->
+<div id="carteira-section" class="card wallet-section">
+  <h2>💳 Minha Carteira</h2>
+  <input id="meuNome" placeholder="Digite seu nome/loja/wallet">
+  <button onclick="salvarMinhaCarteira()">💾 Salvar Carteira</button>
+  <div id="infoCarteira" style="margin-top:15px;color:#4ecdc4;font-weight:bold;"></div>
+</div>
+
+<div class="card">
+  <h2>💰 Saldo Atual</h2>
+  <div class="balance" id="balance">R$ 0,00</div>
+  
+  <div class="wallet-section">
+    <h3>Transferir</h3>
+    <input id="from" placeholder="De (sua wallet salva)" readonly>
+    <input id="to" placeholder="Para">
+    <input id="amount" type="number" placeholder="Valor" step="0.01">
+    <button onclick="sendTx()">🚀 Enviar</button>
+  </div>
+</div>
+
+<div class="card">
+  <h2>📊 Ledger (Histórico)</h2>
+  <div id="ledger" class="ledger"></div>
+</div>
+</div>
+
+<script>
+// 👇 VARIÁVEIS GLOBAIS
+let balance = 0;
+let transactions = JSON.parse(localStorage.getItem('teraTxs')) || [];
+let minhaCarteira = localStorage.getItem('teraCarteira') || '';
+
+// 👇 CARREGAR CARTEIRA SALVA
+document.getElementById('from').value = minhaCarteira;
+document.getElementById('meuNome').value = minhaCarteira;
+updateInfoCarteira();
+
+function updateInfoCarteira() {
+  const info = document.getElementById('infoCarteira');
+  if(minhaCarteira) {
+    info.innerHTML = `✅ Carteira salva: <strong>${minhaCarteira}</strong>`;
+  } else {
+    info.innerHTML = '❌ Nenhuma carteira salva';
+  }
+}
+
+// 👇 SALVAR CARTEIRA
+async function salvarMinhaCarteira() {
+  const nome = document.getElementById('meuNome').value.trim();
+  if(!nome) return alert('Digite um nome/loja!');
+  
+  localStorage.setItem('teraCarteira', nome);
+  minhaCarteira = nome;
+  document.getElementById('from').value = nome;
+  updateInfoCarteira();
+  alert('✅ Carteira salva!');
+}
+
+// 👇 ENVIAR TRANSAÇÃO
+async function sendTx() {
+  const from = document.getElementById('from').value.trim();
+  const to = document.getElementById('to').value.trim();
+  const amount = parseFloat(document.getElementById('amount').value);
+  
+  if(!from || !to || !amount || amount <= 0) {
+    return alert('Preencha todos os campos corretamente!');
+  }
+  
+  // SIMULAÇÃO BLOCKCHAIN (gera hash único)
+  const txHash = '0x' + Math.random().toString(16).substr(2,64);
+  const timestamp = new Date().toLocaleString('pt-BR');
+  
+  const tx = { from, to, amount, hash: txHash, time: timestamp, type: 'sent' };
+  transactions.unshift(tx);
+  localStorage.setItem('teraTxs', JSON.stringify(transactions.slice(0,100))); // max 100 tx
+  
+  balance -= amount;
+  updateBalance();
+  loadLedger();
+  
+  // LIMPA FORM
+  document.getElementById('to').value = '';
+  document.getElementById('amount').value = '';
+  
+  alert(`✅ TX enviada!
+Hash: ${txHash.slice(0,10)}...`);
+}
+
+// 👇 ATUALIZAR SALDO
+function updateBalance() {
+  document.getElementById('balance').innerHTML = 
+    `R$ ${balance.toLocaleString('pt-BR', {minimumFractionDigits:2,maximumFractionDigits:2})}`;
+}
+
+// 👇 CARREGAR LEDGER
+function loadLedger() {
+  const ledger = document.getElementById('ledger');
+  let html = '';
+  
+  transactions.forEach(tx => {
+    const isMine = tx.from === minhaCarteira || tx.to === minhaCarteira;
+    if(!isMine) return; // só mostra minhas tx
+    
+    const typeClass = tx.from === minhaCarteira ? 'negative' : 'positive';
+    const arrow = tx.from === minhaCarteira ? '→' : '←';
+    
+    html += `
+      <div class="tx">
+        <div>
+          <span class="from">${tx.from.slice(0,8)}...</span> ${arrow} 
+          <span class="to">${tx.to.slice(0,8)}...</span>
+        </div>
+        <div>
+          <span class="amount ${typeClass}">R$ ${tx.amount.toFixed(2)}</span>
+          <br><small>${tx.time}</small>
+        </div>
+      </div>
+    `;
+  });
+  
+  ledger.innerHTML = html || '<div style="text-align:center;color:#888;">Nenhuma transação</div>';
+}
+
+// 👇 AUTO-REFRESH (5s)
+setInterval(() => {
+  loadLedger();
+  updateBalance();
+}, 5000);
+
+// 👇 INICIALIZA
+loadLedger();
+updateBalance();
+</script>
+</body>
+</html>
