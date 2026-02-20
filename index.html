@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>⚡️ PAYEDE INT. v17.0 - Login + Carteira Digital</title>
+<title>⚡️ PAYEDE INT. v17.1 - Login + Carteira Digital (Corrigido)</title>
 <meta name="viewport" content="width=device-width">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -27,8 +27,8 @@ input:focus{outline:none;border-color:#4caf50;box-shadow:0 0 0 3px rgba(76,175,8
 <!-- 🖥️ TELA DE LOGIN PADRÃO -->
 <div class="login-screen" id="telaLogin">
   <div class="logo">
-    <h1>⚡️ PAYEDE INT.</h1>
-    <div style="font-size:14px;opacity:0.8;">Carteira Digital EDE</div>
+    <h1>⚡️ PAYEDE INT. v17.1</h1>
+    <div style="font-size:14px;opacity:0.8;">Carteira Digital EDE (Corrigido)</div>
   </div>
   
   <div class="input-group">
@@ -107,7 +107,7 @@ input:focus{outline:none;border-color:#4caf50;box-shadow:0 0 0 3px rgba(76,175,8
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script>
 // ====================================================================
-// PAYEDE INT. v17.0 CORRIGIDO - 100% FUNCIONAL
+// PAYEDE INT. v17.1 CORRIGIDO - SALDO 0 PARA NOVAS CARTEIRAS
 // ====================================================================
 let payEDE;
 
@@ -133,8 +133,11 @@ class PayEDE_INT_v17 {
     };
     
     const idx = this.wallets.findIndex(w => w.id === 'PAY000000');
-    if (idx > -1) this.wallets[idx] = admin;
-    else this.wallets.unshift(admin);
+    if (idx > -1) {
+      this.wallets[idx] = admin;
+    } else {
+      this.wallets.unshift(admin);
+    }
     
     this.salvarTudo();
   }
@@ -172,6 +175,7 @@ class PayEDE_INT_v17 {
   }
   
   criarNovaCarteira(nome) {
+    // ✅ CORREÇÃO: NOVAS CARTEIRAS COMEÇAM COM SALDO 0
     this.totalVendas++;
     const id = `PAY${this.totalVendas.toString().padStart(6, '0')}`;
     const chave = `PAYEDE_${Date.now()}_${Math.random().toString(36).substr(2, 28)}`;
@@ -180,7 +184,7 @@ class PayEDE_INT_v17 {
       id: id,
       nome: nome,
       privateKey: chave,
-      balance: 0,
+      balance: 0,  // ✅ SALDO INICIAL = 0 (CORRIGIDO)
       status: 'criada',
       data: new Date().toLocaleString('pt-BR')
     };
@@ -203,7 +207,7 @@ class PayEDE_INT_v17 {
     this.salvarTudo();
     
     this.atualizarInterface();
-    alert(`✅ +10 EDE ativados!\nNovo saldo: ${carteira.balance} EDE`);
+    alert(`✅ +10 EDE ativados!\nNovo saldo: ${carteira.balance.toFixed(2)} EDE`);
   }
   
   transferirEDE(chaveDestino, valor) {
@@ -219,7 +223,7 @@ class PayEDE_INT_v17 {
     this.salvarTudo();
     this.atualizarInterface();
     
-    return `✅ ${valor} EDE → ${destino.nome}`;
+    return `✅ ${valor.toFixed(2)} EDE → ${destino.nome}`;
   }
   
   salvarTudo() {
@@ -261,13 +265,13 @@ class PayEDE_INT_v17 {
   }
 }
 
-// ✅ INICIALIZAÇÃO CORRIGIDA
+// ✅ INICIALIZAÇÃO
 document.addEventListener('DOMContentLoaded', function() {
   payEDE = new PayEDE_INT_v17();
   window.payEDE = payEDE;
 });
 
-// 🎯 FUNÇÕES GLOBAIS (CORRIGIDAS)
+// 🎯 FUNÇÕES GLOBAIS
 function login() {
   const nome = document.getElementById('nomeLogin').value.trim();
   const chave = document.getElementById('chaveLogin').value.trim();
