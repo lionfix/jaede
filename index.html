@@ -1,95 +1,230 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>⚡️ TERA v4.0 WALLET</title>
+<title>💳 TERA Bank - EDE Wallet</title>
+<meta name="viewport" content="width=device-width">
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Segoe UI',sans-serif;background:linear-gradient(135deg,#0a0a0a 0%,#1a1a2e 50%,#16213e 100%);color:#fff;min-height:100vh;padding:20px;}
-.container{max-width:1200px;margin:0 auto;}
-h1{text-align:center;font-size:2.5em;margin-bottom:30px;background:linear-gradient(45deg,#ff6b6b,#4ecdc4,#45b7d1);background-size:200% 200%;-webkit-background-clip:text;-webkit-text-fill-color:transparent;animation:gradient 3s ease infinite;}
-@keyframes gradient{0%{background-position:0% 50%;}50%{background-position:100% 50%;}100%{background-position:0% 50%;}}
-.card{background:rgba(255,255,255,0.1);backdrop-filter:blur(20px);border-radius:20px;padding:30px;margin-bottom:30px;border:1px solid rgba(255,255,255,0.2);}
-.wallet-section{margin-bottom:30px;}
-#carteira-section{background:linear-gradient(135deg,rgba(255,107,107,0.2),rgba(78,205,196,0.2));border:2px solid rgba(255,107,107,0.5);}
-input,button{width:100%;padding:15px;margin:10px 0;border:none;border-radius:12px;font-size:16px;font-family:inherit;transition:all 0.3s;}
-input{background:rgba(255,255,255,0.9);color:#333;}
-button{background:linear-gradient(45deg,#ff6b6b,#4ecdc4);color:white;cursor:pointer;font-weight:bold;text-transform:uppercase;}
-button:hover{transform:translateY(-2px);box-shadow:0 10px 25px rgba(255,107,107,0.4);}
-.ledger{max-height:400px;overflow-y:auto;background:rgba(0,0,0,0.3);border-radius:15px;padding:20px;}
-.tx{display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid rgba(255,255,255,0.1);font-size:14px;}
-.tx:last-child{border-bottom:none;}
-.from,to{font-weight:bold;color:#4ecdc4;}
-.amount{font-size:18px;}
-.positive{color:#4ecdc4;}
-.negative{color:#ff6b6b;}
-.balance{display:flex;justify-content:space-between;align-items:center;font-size:24px;font-weight:bold;margin:20px 0;background:rgba(255,255,255,0.1);padding:20px;border-radius:15px;}
-@media(max-width:768px){.container{padding:10px;}h1{font-size:2em;}}
+* {margin:0;padding:0;box-sizing:border-box;}
+body {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  background: #fafafa;
+  color: #1a1a1a;
+  min-height: 100vh;
+  padding-bottom: 100px;
+}
+
+/* 👇 HEADER BANCO */
+.header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.balance-header {
+  font-size: 28px;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 5px;
+}
+.saldo-label { 
+  font-size: 14px; 
+  opacity: 0.9; 
+  text-align: center;
+}
+
+/* 👇 CARDS NUBANK */
+.card {
+  background: white;
+  margin: 16px 20px;
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+.card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #4a4a4a;
+  margin-bottom: 16px;
+}
+
+/* 👇 MINHA CONTA */
+#carteira-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+#meuNome { background: rgba(255,255,255,0.9); }
+
+/* 👇 INPUTS BANCO */
+.input-group {
+  position: relative;
+  margin-bottom: 16px;
+}
+input {
+  width: 100%;
+  padding: 16px 16px 16px 50px;
+  border: 1px solid #e1e5e9;
+  border-radius: 12px;
+  font-size: 16px;
+  background: white;
+  transition: all 0.2s;
+}
+input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102,126,234,0.1);
+}
+
+/* 👇 ICONES INPUT */
+.input-group:before {
+  position: absolute;
+  left: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 20px;
+}
+.input-group:nth-child(1):before { content: "👤"; }
+.input-group:nth-child(2):before { content: "📱"; }
+.input-group:nth-child(3):before { content: "₿"; }
+
+/* 👇 BOTÕES PIX */
+.btn {
+  width: 100%;
+  padding: 16px;
+  border: none;
+  border-radius: 12px;
+  font-size: 16px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  transition: all 0.2s;
+  cursor: pointer;
+}
+.btn-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 25px rgba(102,126,234,0.4);
+}
+.btn-secondary {
+  background: white;
+  color: #667eea;
+  border: 1px solid #667eea;
+}
+
+/* 👇 LEDGER STYLE */
+.ledger {
+  max-height: 400px;
+  overflow-y: auto;
+  background: #f8f9fa;
+}
+.tx-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.tx-info { flex: 1; }
+.tx-fromto { 
+  font-size: 14px; 
+  color: #666; 
+  margin-bottom: 4px;
+}
+.tx-amount {
+  font-size: 20px;
+  font-weight: 700;
+}
+.positive { color: #00d4aa; }
+.negative { color: #ff3b30; }
+
+.status {
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.status-sent { background: rgba(255,59,48,0.1); color: #ff3b30; }
+.status-received { background: rgba(0,212,170,0.1); color: #00d4aa; }
+
+/* 👇 MOBILE PERFECT */
+@media (max-width: 480px) {
+  .header { padding: 16px; }
+  .balance-header { font-size: 24px; }
+  .card { margin: 12px 16px; padding: 20px; }
+}
 </style>
 </head>
 <body>
-<div class="container">
-<h1>⚡️ TERA v4.0 WALLET</h1>
-
-<!-- 👇 NOVA SEÇÃO CARTEIRA (SALVA NO LOCALSTORAGE) -->
-<div id="carteira-section" class="card wallet-section">
-  <h2>💳 Minha Carteira</h2>
-  <input id="meuNome" placeholder="Digite seu nome/loja/wallet">
-  <button onclick="salvarMinhaCarteira()">💾 Salvar Carteira</button>
-  <div id="infoCarteira" style="margin-top:15px;color:#4ecdc4;font-weight:bold;"></div>
+<div class="header">
+  <div class="saldo-label">Saldo em EDE</div>
+  <div class="balance-header" id="balance">0 EDE</div>
 </div>
 
+<!-- 👇 MINHA CONTA (TOPO) -->
+<div class="card" id="carteira-section">
+  <div class="card-title">💳 Minha Conta EDE</div>
+  <input id="meuNome" placeholder="Nome da sua conta EDE">
+  <button class="btn btn-secondary" onclick="salvarMinhaCarteira()">
+    💾 Salvar Conta EDE
+  </button>
+  <div id="infoCarteira" style="font-size:14px;margin-top:8px;"></div>
+</div>
+
+<!-- 👇 TRANSFERIR EDE -->
 <div class="card">
-  <h2>💰 Saldo Atual</h2>
-  <div class="balance" id="balance">R$ 0,00</div>
-  
-  <div class="wallet-section">
-    <h3>Transferir</h3>
-    <input id="from" placeholder="De (sua wallet salva)" readonly>
-    <input id="to" placeholder="Para">
-    <input id="amount" type="number" placeholder="Valor" step="0.01">
-    <button onclick="sendTx()">🚀 Enviar</button>
+  <div class="card-title">⚡️ Transferir EDE</div>
+  <div class="input-group">
+    <input id="from" placeholder="De (sua conta EDE)" readonly>
   </div>
+  <div class="input-group">
+    <input id="to" placeholder="Conta EDE destino">
+  </div>
+  <div class="input-group">
+    <input id="amount" type="number" placeholder="0 EDE" step="0.00000001">
+  </div>
+  <button class="btn btn-primary" onclick="sendTx()">
+    ➡️ Transferir EDE
+  </button>
 </div>
 
+<!-- 👇 EXTRATO EDE -->
 <div class="card">
-  <h2>📊 Ledger (Histórico)</h2>
+  <div class="card-title">📋 Extrato EDE</div>
   <div id="ledger" class="ledger"></div>
-</div>
 </div>
 
 <script>
-// 👇 VARIÁVEIS GLOBAIS
+// VARIÁVEIS GLOBAIS
 let balance = 0;
 let transactions = JSON.parse(localStorage.getItem('teraTxs')) || [];
 let minhaCarteira = localStorage.getItem('teraCarteira') || '';
 
-// 👇 CARREGAR CARTEIRA SALVA
+// CARREGAR
 document.getElementById('from').value = minhaCarteira;
 document.getElementById('meuNome').value = minhaCarteira;
 updateInfoCarteira();
 
 function updateInfoCarteira() {
   const info = document.getElementById('infoCarteira');
-  if(minhaCarteira) {
-    info.innerHTML = `✅ Carteira salva: <strong>${minhaCarteira}</strong>`;
-  } else {
-    info.innerHTML = '❌ Nenhuma carteira salva';
-  }
+  info.innerHTML = minhaCarteira ? 
+    `✅ Conta EDE ativa: ${minhaCarteira.slice(0,12)}...` : 
+    '❌ Cadastre sua conta EDE';
 }
 
-// 👇 SALVAR CARTEIRA
 async function salvarMinhaCarteira() {
   const nome = document.getElementById('meuNome').value.trim();
-  if(!nome) return alert('Digite um nome/loja!');
+  if(!nome) return alert('Digite o nome da sua conta EDE!');
   
   localStorage.setItem('teraCarteira', nome);
   minhaCarteira = nome;
   document.getElementById('from').value = nome;
   updateInfoCarteira();
-  alert('✅ Carteira salva!');
+  alert('✅ Conta EDE salva!');
 }
 
-// 👇 ENVIAR TRANSAÇÃO
 async function sendTx() {
   const from = document.getElementById('from').value.trim();
   const to = document.getElementById('to').value.trim();
@@ -99,68 +234,72 @@ async function sendTx() {
     return alert('Preencha todos os campos corretamente!');
   }
   
-  // SIMULAÇÃO BLOCKCHAIN (gera hash único)
   const txHash = '0x' + Math.random().toString(16).substr(2,64);
   const timestamp = new Date().toLocaleString('pt-BR');
   
-  const tx = { from, to, amount, hash: txHash, time: timestamp, type: 'sent' };
-  transactions.unshift(tx);
-  localStorage.setItem('teraTxs', JSON.stringify(transactions.slice(0,100))); // max 100 tx
+  const tx = { 
+    from, to, amount, 
+    hash: txHash.slice(0,16), 
+    time: timestamp,
+    type: from === minhaCarteira ? 'sent' : 'received'
+  };
   
-  balance -= amount;
+  transactions.unshift(tx);
+  localStorage.setItem('teraTxs', JSON.stringify(transactions.slice(0,50)));
+  
+  if(tx.type === 'sent') balance -= amount;
+  else balance += amount;
+  
   updateBalance();
   loadLedger();
   
-  // LIMPA FORM
   document.getElementById('to').value = '';
   document.getElementById('amount').value = '';
   
-  alert(`✅ TX enviada!
-Hash: ${txHash.slice(0,10)}...`);
+  alert(`✅ Transferência EDE realizada!
+ID: ${tx.hash}`);
 }
 
-// 👇 ATUALIZAR SALDO
 function updateBalance() {
   document.getElementById('balance').innerHTML = 
-    `R$ ${balance.toLocaleString('pt-BR', {minimumFractionDigits:2,maximumFractionDigits:2})}`;
+    `${balance.toLocaleString('pt-BR', {minimumFractionDigits:8,maximumFractionDigits:8})} EDE`;
 }
 
-// 👇 CARREGAR LEDGER
 function loadLedger() {
   const ledger = document.getElementById('ledger');
   let html = '';
   
-  transactions.forEach(tx => {
-    const isMine = tx.from === minhaCarteira || tx.to === minhaCarteira;
-    if(!isMine) return; // só mostra minhas tx
+  transactions.slice(0,10).forEach(tx => {
+    if(tx.from !== minhaCarteira && tx.to !== minhaCarteira) return;
     
     const typeClass = tx.from === minhaCarteira ? 'negative' : 'positive';
-    const arrow = tx.from === minhaCarteira ? '→' : '←';
+    const typeLabel = tx.from === minhaCarteira ? 'Enviado' : 'Recebido';
+    const statusClass = tx.from === minhaCarteira ? 'status-sent' : 'status-received';
     
     html += `
-      <div class="tx">
-        <div>
-          <span class="from">${tx.from.slice(0,8)}...</span> ${arrow} 
-          <span class="to">${tx.to.slice(0,8)}...</span>
+      <div class="tx-item">
+        <div class="tx-info">
+          <div class="tx-fromto">
+            ${tx.from.slice(0,10)}... → ${tx.to.slice(0,10)}...
+          </div>
+          <div class="tx-amount ${typeClass}">${tx.amount.toFixed(8)} EDE</div>
         </div>
         <div>
-          <span class="amount ${typeClass}">R$ ${tx.amount.toFixed(2)}</span>
-          <br><small>${tx.time}</small>
+          <div class="status ${statusClass}">${typeLabel}</div>
         </div>
       </div>
     `;
   });
   
-  ledger.innerHTML = html || '<div style="text-align:center;color:#888;">Nenhuma transação</div>';
+  ledger.innerHTML = html || '<div style="padding:40px;text-align:center;color:#999;">Nenhuma transação EDE</div>';
 }
 
-// 👇 AUTO-REFRESH (5s)
+// AUTO-REFRESH
 setInterval(() => {
   loadLedger();
   updateBalance();
-}, 5000);
+}, 3000);
 
-// 👇 INICIALIZA
 loadLedger();
 updateBalance();
 </script>
