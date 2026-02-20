@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>⚡️ PAYEDE INT. v20.7 - 100% PRIVADO</title>
+<title>⚡️ PAYEDE INT. v20.8 - Admin Oculto</title>
 <meta name="viewport" content="width=device-width">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -29,7 +29,7 @@ input:focus{outline:none;border-color:#4caf50;box-shadow:0 0 0 3px rgba(76,175,8
 <body>
 <div class="login-screen" id="telaLogin">
   <div class="logo">
-    <h1>⚡️ PAYEDE INT. v20.7</h1>
+    <h1>⚡️ PAYEDE INT. v20.8</h1>
     <div style="font-size:14px;opacity:0.8;">Carteira 100% Privada</div>
   </div>
   
@@ -55,9 +55,9 @@ input:focus{outline:none;border-color:#4caf50;box-shadow:0 0 0 3px rgba(76,175,8
     <button class="btn btn-secondary" onclick="sair()" style="width:auto;padding:10px 20px;">🔐 Sair</button>
   </div>
   
-  <!-- ADMIN GLOBAL -->
-  <div class="card admin-wallet">
-    <h3>👑 Admin Global</h3>
+  <!-- ADMIN - OCULTO (só aparece com chave admin) -->
+  <div id="secaoAdmin" class="card admin-wallet hidden">
+    <h3>👑 Admin Master</h3>
     <div class="balance-display">10.000,00 EDE</div>
     <div>PAYEDE_INT_ADMIN_10000_7b4f2a9c8d3e5f1g2h3i4j5k6l7m8n9o</div>
     <button class="btn btn-success" onclick="copiarAdmin()" style="font-size:14px;">📋 Copiar Admin</button>
@@ -65,7 +65,7 @@ input:focus{outline:none;border-color:#4caf50;box-shadow:0 0 0 3px rgba(76,175,8
   
   <!-- MINHA CARTEIRA ATIVA -->
   <div class="card">
-    <h3>💳 Minha Carteira Ativa</h3>
+    <h3>💳 Minha Carteira</h3>
     <div class="balance-display" id="meuSaldo">0,00 EDE</div>
     <div style="background:#f0f8f0;padding:15px;border-radius:10px;margin:15px 0;">
       <strong>🆔 ID:</strong> <span id="minhaWalletId"></span><br>
@@ -87,7 +87,7 @@ input:focus{outline:none;border-color:#4caf50;box-shadow:0 0 0 3px rgba(76,175,8
   <!-- TRANSFERIR -->
   <div class="card">
     <h3>🔀 Transferir</h3>
-    <input id="chaveDestino" placeholder="🔑 Chave destino (qualquer usuário)">
+    <input id="chaveDestino" placeholder="🔑 Chave destino">
     <input id="valorTransferir" type="number" step="0.01" placeholder="💰 Valor EDE">
     <button class="btn btn-primary" onclick="transferir()">🚀 Transferir</button>
     <div id="statusTransferencia"></div>
@@ -96,38 +96,36 @@ input:focus{outline:none;border-color:#4caf50;box-shadow:0 0 0 3px rgba(76,175,8
 
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script>
-// v20.7 - LOCALSTORAGE ISOLADO POR USUÁRIO
-let minhasCarteiras = [];  // APENAS minhas carteiras
-let todasCarteiras = [];   // Para transferências (busca por chave)
+// v20.8 - ADMIN OCULTO DO PÚBLICO
+let minhasCarteiras = [];
+let todasCarteiras = [];
 let minhaCarteiraAtiva = null;
 let usuarioAtual = null;
 let pagamentos = new Set();
+let isAdmin = false;
 
-// 🔧 CARREGA APENAS MINHAS CARTEIRAS
 function carregarMinhasCarteiras(nomeUsuario) {
-  let data = localStorage.getItem(`payede_${nomeUsuario}_v207`);
+  let data = localStorage.getItem(`payede_${nomeUsuario}_v208`);
   if(data) {
     try {
       minhasCarteiras = JSON.parse(data);
       return true;
     } catch(e) {
-      localStorage.removeItem(`payede_${nomeUsuario}_v207`);
+      localStorage.removeItem(`payede_${nomeUsuario}_v208`);
     }
   }
   return false;
 }
 
 function salvarMinhasCarteiras(nomeUsuario) {
-  localStorage.setItem(`payede_${nomeUsuario}_v207`, JSON.stringify(minhasCarteiras));
+  localStorage.setItem(`payede_${nomeUsuario}_v208`, JSON.stringify(minhasCarteiras));
 }
 
-// 🔧 CARREGA TODAS PARA TRANSFERÊNCIAS
 function carregarTodasCarteiras() {
-  let todasData = localStorage.getItem('payede_todas_v207');
+  let todasData = localStorage.getItem('payede_todas_v208');
   if(todasData) {
     todasCarteiras = JSON.parse(todasData);
   } else {
-    // Admin inicial
     todasCarteiras = [{
       id: 'PAY000000',
       nome: 'Seylor Senesh',
@@ -135,12 +133,12 @@ function carregarTodasCarteiras() {
       balance: 10000,
       status: 'admin'
     }];
-    localStorage.setItem('payede_todas_v207', JSON.stringify(todasCarteiras));
+    localStorage.setItem('payede_todas_v208', JSON.stringify(todasCarteiras));
   }
 }
 
 function salvarTodasCarteiras() {
-  localStorage.setItem('payede_todas_v207', JSON.stringify(todasCarteiras));
+  localStorage.setItem('payede_todas_v208', JSON.stringify(todasCarteiras));
 }
 
 function initApp() {
@@ -152,19 +150,18 @@ function novaCarteira() {
   let nome = document.getElementById('nomeLogin').value.trim();
   if(!nome) return alert('Digite seu nome!');
   
-  // 🔒 ISOLA por usuário
   if(!carregarMinhasCarteiras(nome)) {
     minhasCarteiras = [];
   }
   
   usuarioAtual = nome;
+  isAdmin = false; // Nova conta = não admin
   
-  // Nova carteira com saldo ZERO
   let nova = {
     id: 'PAY' + (minhasCarteiras.length + 1).toString().padStart(6, '0'),
     nome: nome,
-    privateKey: 'PAYEDE_privado_v207_' + Date.now() + '_' + Math.random().toString(36).substr(2, 20),
-    balance: 0,  // ← SEMPRE ZERO
+    privateKey: 'PAYEDE_privado_v208_' + Date.now() + '_' + Math.random().toString(36).substr(2, 20),
+    balance: 0,
     status: 'criada'
   };
   
@@ -185,13 +182,18 @@ function acessarCarteira() {
   let chave = document.getElementById('chaveLogin').value.trim();
   
   if(chave) {
-    // 🔍 Busca em TODAS (para transferências)
     minhaCarteiraAtiva = todasCarteiras.find(w => w.privateKey === chave);
     if(minhaCarteiraAtiva) {
       usuarioAtual = minhaCarteiraAtiva.nome;
+      isAdmin = (minhaCarteiraAtiva.id === 'PAY000000');
       
-      // 🔒 Carrega APENAS minhas carteiras
-      carregarMinhasCarteiras(usuarioAtual);
+      // 🔒 Carrega APENAS minhas carteiras (exceto admin)
+      if(isAdmin) {
+        document.getElementById('secaoAdmin').classList.remove('hidden');
+      } else {
+        carregarMinhasCarteiras(usuarioAtual);
+      }
+      
       mostrarDashboard();
       return;
     }
@@ -200,9 +202,9 @@ function acessarCarteira() {
   }
   
   if(nome) {
-    // 🔒 Carrega APENAS minhas carteiras
     if(carregarMinhasCarteiras(nome)) {
       usuarioAtual = nome;
+      isAdmin = false;
       minhaCarteiraAtiva = minhasCarteiras[0] || null;
       mostrarDashboard();
       return;
@@ -224,7 +226,13 @@ function mostrarDashboard() {
   document.getElementById('minhaWalletId').textContent = minhaCarteiraAtiva.id;
   document.getElementById('minhaChaveInput').value = minhaCarteiraAtiva.privateKey;
   
-  if(minhaCarteiraAtiva.balance === 0) {
+  // Admin oculto por padrão
+  document.getElementById('secaoAdmin').classList.add('hidden');
+  if(isAdmin) {
+    document.getElementById('secaoAdmin').classList.remove('hidden');
+  }
+  
+  if(minhaCarteiraAtiva.balance === 0 && !isAdmin) {
     document.getElementById('secaoAtivar').style.display = 'block';
   }
 }
@@ -238,7 +246,6 @@ function ativar() {
   minhaCarteiraAtiva.status = 'ativa';
   pagamentos.add(txid);
   
-  // Atualiza minhas E todas
   let indexMinhas = minhasCarteiras.findIndex(w => w.id === minhaCarteiraAtiva.id);
   if(indexMinhas > -1) minhasCarteiras[indexMinhas] = minhaCarteiraAtiva;
   let indexTodas = todasCarteiras.findIndex(w => w.id === minhaCarteiraAtiva.id);
@@ -264,7 +271,6 @@ function transferir() {
   destino.balance += valor;
   destino.status = 'ativa';
   
-  // Atualiza listas
   let indexMinhas = minhasCarteiras.findIndex(w => w.id === minhaCarteiraAtiva.id);
   if(indexMinhas > -1) minhasCarteiras[indexMinhas] = minhaCarteiraAtiva;
   let indexTodasDest = todasCarteiras.findIndex(w => w.id === destino.id);
@@ -281,7 +287,7 @@ function transferir() {
 
 function copiarMinhaChave() {
   navigator.clipboard.writeText(document.getElementById('minhaChaveInput').value);
-  alert('✅ Chave copiada! Funciona em qualquer dispositivo.');
+  alert('✅ Chave copiada!');
 }
 
 function copiarAdmin() {
@@ -294,6 +300,7 @@ function sair() {
   document.getElementById('telaLogin').classList.remove('hidden');
   minhaCarteiraAtiva = null;
   usuarioAtual = null;
+  isAdmin = false;
   minhasCarteiras = [];
 }
 
@@ -303,7 +310,6 @@ function gerarQR() {
   } catch(e) {}
 }
 
-// INICIA
 initApp();
 </script>
 </body>
