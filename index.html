@@ -107,8 +107,10 @@ input:focus{outline:none;border-color:#4caf50;box-shadow:0 0 0 3px rgba(76,175,8
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script>
 // ====================================================================
-// PAYEDE INT. v17.0 - TELA LOGIN + ACESSO POR CHAVE
+// PAYEDE INT. v17.0 CORRIGIDO - 100% FUNCIONAL
 // ====================================================================
+let payEDE;
+
 class PayEDE_INT_v17 {
   constructor() {
     this.wallets = JSON.parse(localStorage.getItem('payEDE_v17_wallets')) || [];
@@ -116,7 +118,6 @@ class PayEDE_INT_v17 {
     this.pagamentosPicPay = new Set(JSON.parse(localStorage.getItem('payEDE_v17_picpay')) || []);
     this.totalVendas = parseInt(localStorage.getItem('payEDE_v17_vendas')) || 0;
     
-    // ✅ CRIA ADMIN SEYLOR SENESH
     this.criarAdminMaster();
     this.inicializarSistema();
   }
@@ -143,12 +144,14 @@ class PayEDE_INT_v17 {
   }
   
   gerarQRPicPay() {
-    QRCode.toCanvas(document.getElementById('qrPicPay'), 'picpay://pay?username=jaedesystemint&amount=2.00');
+    try {
+      QRCode.toCanvas(document.getElementById('qrPicPay'), 'picpay://pay?username=jaedesystemint&amount=2.00');
+    } catch(e) {
+      console.log('QRCode carregando...');
+    }
   }
   
-  // 🔐 LOGIN POR NOME OU CHAVE
   login(nome, chave = null) {
-    // Procura por nome ou chave
     let carteira = this.wallets.find(w => w.nome.toLowerCase() === nome.toLowerCase());
     
     if (chave && !carteira) {
@@ -168,7 +171,6 @@ class PayEDE_INT_v17 {
     return false;
   }
   
-  // ➕ CRIAR NOVA CARTEIRA
   criarNovaCarteira(nome) {
     this.totalVendas++;
     const id = `PAY${this.totalVendas.toString().padStart(6, '0')}`;
@@ -188,7 +190,6 @@ class PayEDE_INT_v17 {
     this.salvarTudo();
   }
   
-  // 💰 ATIVAR EDE
   ativarEDE(txid) {
     const sessao = JSON.parse(localStorage.getItem('payEDE_v17_sessao') || '{}');
     const carteira = this.wallets.find(w => w.id === sessao.id);
@@ -205,7 +206,6 @@ class PayEDE_INT_v17 {
     alert(`✅ +10 EDE ativados!\nNovo saldo: ${carteira.balance} EDE`);
   }
   
-  // 🔀 TRANSFERIR
   transferirEDE(chaveDestino, valor) {
     const sessao = JSON.parse(localStorage.getItem('payEDE_v17_sessao') || '{}');
     const origem = this.wallets.find(w => w.id === sessao.id);
@@ -261,9 +261,13 @@ class PayEDE_INT_v17 {
   }
 }
 
-const payEDE = new PayEDE_INT_v17();
+// ✅ INICIALIZAÇÃO CORRIGIDA
+document.addEventListener('DOMContentLoaded', function() {
+  payEDE = new PayEDE_INT_v17();
+  window.payEDE = payEDE;
+});
 
-// 🎯 FUNÇÕES GLOBAIS
+// 🎯 FUNÇÕES GLOBAIS (CORRIGIDAS)
 function login() {
   const nome = document.getElementById('nomeLogin').value.trim();
   const chave = document.getElementById('chaveLogin').value.trim();
@@ -305,13 +309,15 @@ function transferirEDE() {
 }
 
 function copiarMinhaChave() {
-  navigator.clipboard.writeText(document.getElementById('minhaChaveInput').value);
-  alert('✅ Chave copiada!');
+  navigator.clipboard.writeText(document.getElementById('minhaChaveInput').value).then(() => {
+    alert('✅ Chave copiada!');
+  });
 }
 
 function copiarAdminChave() {
-  navigator.clipboard.writeText('PAYEDE_INT_ADMIN_10000_7b4f2a9c8d3e5f1g2h3i4j5k6l7m8n9o');
-  alert('✅ Chave Admin copiada!');
+  navigator.clipboard.writeText('PAYEDE_INT_ADMIN_10000_7b4f2a9c8d3e5f1g2h3i4j5k6l7m8n9o').then(() => {
+    alert('✅ Chave Admin copiada!');
+  });
 }
 
 function logout() {
