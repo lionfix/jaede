@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>⚡️ PAYEDE INT. v20.1 - Interface Limpa</title>
+<title>⚡️ PAYEDE INT. v20.2 - TRANSFERÊNCIA OK</title>
 <meta name="viewport" content="width=device-width">
 <style>
 *{margin:0;padding:0;box-sizing:border-box;}
@@ -27,10 +27,10 @@ input:focus{outline:none;border-color:#4caf50;box-shadow:0 0 0 3px rgba(76,175,8
 </style>
 </head>
 <body>
-<!-- INTERFACE ORIGINAL PERFEITA -->
+<!-- INTERFACE ORIGINAL -->
 <div class="login-screen" id="telaLogin">
   <div class="logo">
-    <h1>⚡️ PAYEDE INT. v20.1</h1>
+    <h1>⚡️ PAYEDE INT. v20.2</h1>
     <div style="font-size:14px;opacity:0.8;">Carteira Digital EDE</div>
   </div>
   
@@ -109,7 +109,7 @@ input:focus{outline:none;border-color:#4caf50;box-shadow:0 0 0 3px rgba(76,175,8
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script>
 // ====================================================================
-// v20.1 - LIMPO + SALDO 0 AUTOMÁTICO (SEM BOTÃO VISÍVEL)
+// v20.2 - SALDO 0 APENAS NA CRIAÇÃO NOVA
 // ====================================================================
 
 let wallets = [];
@@ -117,32 +117,22 @@ let minhaCarteira = null;
 let pagamentosPicPay = new Set();
 let totalVendas = 0;
 
-// 🔧 AUTO-RESET INVISÍVEL na primeira execução
-if(!localStorage.getItem('payede_v20.1_init')) {
-  localStorage.clear();
-  localStorage.setItem('payede_v20.1_init', 'true');
-}
-
-// 🔧 INICIALIZAÇÃO
+// ✅ INICIALIZAÇÃO - NÃO ALTERA SALDOS EXISTENTES
 function init() {
-  let data = localStorage.getItem('payede_v201_wallets');
-  
-  if(data) {
-    wallets = JSON.parse(data);
-    let pagData = localStorage.getItem('payede_v201_pagamentos');
-    if(pagData) pagamentosPicPay = new Set(JSON.parse(pagData));
-    totalVendas = parseInt(localStorage.getItem('payede_v201_vendas') || '0');
+  // Carrega dados antigos SEM ALTERAR
+  let walletsData = localStorage.getItem('payede_v202_wallets');
+  if(walletsData) {
+    wallets = JSON.parse(walletsData);
   }
   
-  // 🚨 FORÇA ZERO EM TODAS NÃO-ADMIN
-  wallets.forEach(function(wallet) {
-    if(wallet.id !== 'PAY000000') {
-      wallet.balance = 0;
-      wallet.status = wallet.balance > 0 ? 'ativa' : 'criada';
-    }
-  });
+  let pagamentosData = localStorage.getItem('payede_v202_pagamentos');
+  if(pagamentosData) {
+    pagamentosPicPay = new Set(JSON.parse(pagamentosData));
+  }
   
-  // ✅ GARANTE ADMIN
+  totalVendas = parseInt(localStorage.getItem('payede_v202_vendas') || '0');
+  
+  // ✅ CRIA ADMIN SE NÃO EXISTE
   if(!wallets.find(w => w.id === 'PAY000000')) {
     wallets.unshift({
       id: 'PAY000000',
@@ -158,29 +148,26 @@ function init() {
   setTimeout(gerarQR, 500);
 }
 
+// ✅ CRIAÇÃO NOVA - SALDO SEMPRE ZERO
 function criarNovaCarteira(nome) {
   totalVendas++;
   let id = `PAY${totalVendas.toString().padStart(6, '0')}`;
-  let chave = `PAYEDE_v201_${Date.now()}_${Math.random().toString(36).substr(2, 20)}`;
+  let chave = `PAYEDE_v202_${Date.now()}_${Math.random().toString(36).substr(2, 20)}`;
   
-  // 🔥 SALDO ZERO FORÇADO 4 VEZES
   let novaCarteira = {
     id: id,
     nome: nome,
     privateKey: chave,
-    balance: 0,        // ← 1
+    balance: 0,  // ← ZERO APENAS AQUI
     status: 'criada',
     data: new Date().toLocaleString('pt-BR')
   };
-  
-  novaCarteira.balance = 0;           // ← 2
-  novaCarteira.balance = parseFloat(0); // ← 3
-  novaCarteira.balance = Number(0);    // ← 4
   
   wallets.push(novaCarteira);
   minhaCarteira = novaCarteira;
   mostrarDashboard();
   salvarTudo();
+  alert(`✅ Nova carteira: ${id}\nSaldo inicial: 0 EDE\nChave copiada para uso global!`);
 }
 
 function login() {
@@ -189,16 +176,22 @@ function login() {
   
   if(chave) {
     minhaCarteira = wallets.find(w => w.privateKey === chave);
+    if(minhaCarteira) {
+      mostrarDashboard();
+      return;
+    }
   } else if(nome) {
     minhaCarteira = wallets.find(w => w.nome.toLowerCase() === nome.toLowerCase());
+    if(minhaCarteira) {
+      mostrarDashboard();
+      return;
+    }
   }
   
-  if(minhaCarteira) {
-    mostrarDashboard();
-  } else if(nome && confirm('Carteira não encontrada. Criar nova?')) {
+  if(nome && confirm('Carteira não encontrada. Criar nova com saldo ZERO?')) {
     criarNovaCarteira(nome);
   } else {
-    alert('❌ Digite nome ou chave!');
+    alert('❌ Digite nome ou chave válida!');
   }
 }
 
@@ -220,8 +213,8 @@ function mostrarDashboard() {
 
 function ativarEDE() {
   let txid = document.getElementById('txidPicPay').value.trim();
-  if(!txid) return alert('❌ Digite ID da transação!');
-  if(pagamentosPicPay.has(txid)) return alert('❌ Pagamento já usado!');
+  if(!txid) return alert('❌ Digite ID da transação PicPay!');
+  if(pagamentosPicPay.has(txid)) return alert('❌ Pagamento já utilizado!');
   
   minhaCarteira.balance += 10;
   minhaCarteira.status = 'ativa';
@@ -238,75 +231,21 @@ function transferirEDE() {
   let chaveDest = document.getElementById('chaveDestino').value.trim();
   let valor = parseFloat(document.getElementById('valorTransferir').value);
   
-  if(!chaveDest || valor <= 0) return alert('❌ Dados inválidos!');
+  if(!chaveDest) return alert('❌ Digite a chave de destino!');
+  if(!valor || valor <= 0) return alert('❌ Digite valor válido!');
   
   let destino = wallets.find(w => w.privateKey === chaveDest);
-  if(!destino) return alert('❌ Chave inválida!');
-  if(minhaCarteira.balance < valor) return alert('❌ Saldo insuficiente!');
-  
-  minhaCarteira.balance -= valor;
-  destino.balance += valor;
-  salvarTudo();
-  
-  document.getElementById('meuSaldo').textContent = `${minhaCarteira.balance.toFixed(2)} EDE`;
-  document.getElementById('statusTransferencia').innerHTML = 
-    `<div class="status success">✅ ${valor.toFixed(2)} EDE → ${destino.nome}</div>`;
-  document.getElementById('chaveDestino').value = '';
-  document.getElementById('valorTransferir').value = '';
-  atualizarLista();
-}
-
-function atualizarLista() {
-  let html = wallets.map(w => `
-    <div style="padding:15px;border:1px solid #eee;border-radius:10px;margin:10px 0;background:${
-      w.id === 'PAY000000' ? '#d4edda' : 
-      w.status === 'ativa' ? '#e8f5e8' : '#f9f9f9'
-    };">
-      <div style="font-weight:bold;">${w.id}</div>
-      <div>${w.nome}</div>
-      <div style="font-size:20px;color:#4caf50;">${w.balance.toFixed(2)} EDE</div>
-      <div style="font-size:12px;">${w.privateKey.slice(0,20)}...</div>
-    </div>
-  `).join('');
-  document.getElementById('listaCarteiras').innerHTML = html;
-}
-
-function salvarTudo() {
-  localStorage.setItem('payede_v201_wallets', JSON.stringify(wallets));
-  localStorage.setItem('payede_v201_pagamentos', JSON.stringify([...pagamentosPicPay]));
-  localStorage.setItem('payede_v201_vendas', totalVendas);
-}
-
-function gerarQR() {
-  try {
-    QRCode.toCanvas(document.getElementById('qrPicPay'), 'picpay://pay?username=jaedesystemint&amount=2.00');
-  } catch(e) {
-    console.log('QR carregando...');
+  if(!destino) {
+    document.getElementById('statusTransferencia').innerHTML = 
+      `<div class="status error">❌ Chave "${chaveDest.slice(0,20)}..." não encontrada!</div>`;
+    return;
   }
-}
-
-function copiarMinhaChave() {
-  navigator.clipboard.writeText(document.getElementById('minhaChaveInput').value).then(() => {
-    alert('✅ Chave copiada!');
-  });
-}
-
-function copiarAdminChave() {
-  navigator.clipboard.writeText('PAYEDE_INT_ADMIN_10000_7b4f2a9c8d3e5f1g2h3i4j5k6l7m8n9o').then(() => {
-    alert('✅ Chave Admin copiada!');
-  });
-}
-
-function logout() {
-  document.getElementById('dashboard').classList.add('hidden');
-  document.getElementById('telaLogin').classList.remove('hidden');
-  document.getElementById('nomeLogin').value = '';
-  document.getElementById('chaveLogin').value = '';
-  minhaCarteira = null;
-}
-
-// 🚀 INICIA AUTOMATICAMENTE
-init();
-</script>
-</body>
-</html>
+  
+  if(minhaCarteira.balance < valor) {
+    document.getElementById('statusTransferencia').innerHTML = 
+      `<div class="status error">❌ Saldo insuficiente: ${minhaCarteira.balance.toFixed(2)} EDE</div>`;
+    return;
+  }
+  
+  // ✅ TRANSFERÊNCIA
+  m
