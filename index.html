@@ -280,4 +280,47 @@ function login() {
 }
 
 function criarNovaConta() {
-  const 
+  const nome = document.getElementById('nomeLogin').value.trim() || prompt('Digite seu nome completo:');
+  if (nome) {
+    payEDE.criarNovaCarteira(nome);
+  }
+}
+
+function ativarEDE() {
+  const txid = document.getElementById('txidPicPay').value.trim();
+  payEDE.ativarEDE(txid);
+}
+
+function transferirEDE() {
+  const chave = document.getElementById('chaveDestino').value.trim();
+  const valor = parseFloat(document.getElementById('valorTransferir').value);
+  const resultado = payEDE.transferirEDE(chave, valor);
+  
+  if (resultado) {
+    document.getElementById('statusTransferencia').innerHTML = 
+      `<div style="color:#28a745;padding:10px;background:#d4edda;border-radius:8px;">${resultado}</div>`;
+    document.getElementById('chaveDestino').value = '';
+    document.getElementById('valorTransferir').value = '';
+  }
+}
+
+function copiarMinhaChave() {
+  navigator.clipboard.writeText(document.getElementById('minhaChaveInput').value);
+  alert('✅ Chave copiada!');
+}
+
+function copiarAdminChave() {
+  navigator.clipboard.writeText('PAYEDE_INT_ADMIN_10000_7b4f2a9c8d3e5f1g2h3i4j5k6l7m8n9o');
+  alert('✅ Chave Admin copiada!');
+}
+
+function logout() {
+  localStorage.removeItem('payEDE_v17_sessao');
+  document.getElementById('dashboard').classList.add('hidden');
+  document.getElementById('telaLogin').classList.remove('hidden');
+  document.getElementById('nomeLogin').value = '';
+  document.getElementById('chaveLogin').value = '';
+}
+</script>
+</body>
+</html>
