@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-/* CSS v21.3 - igual ao anterior */
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:system-ui;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;padding:20px;color:white;}
 .login-screen{max-width:400px;margin:0 auto;background:white;color:#333;border-radius:20px;padding:40px;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
@@ -19,13 +18,15 @@ input{width:100%;padding:18px;border:2px solid #e1e5e9;border-radius:12px;font-s
 .card{background:white;border-radius:20px;padding:30px;margin:20px 0;box-shadow:0 10px 30px rgba(0,0,0,0.1);}
 .balance-display{font-size:32px;font-weight:bold;color:#4caf50;text-align:center;margin:20px 0;}
 .hidden{display:none;}
+.status{padding:15px;border-radius:8px;margin:10px 0;text-align:center;}
+.status.success{background:#d4edda;color:#155724;}
 </style>
 </head>
 <body>
 <div class="login-screen" id="telaLogin">
   <div class="logo">
     <h1>⚡️ PAYEDE ASSOC. v22.0</h1>
-    <div style="font-size:14px;opacity:0.8;">✅ Supabase Realtime</div>
+    <div style="font-size:14px;opacity:0.8;">✅ Supabase Realtime - Production</div>
   </div>
   <div class="input-group"><input id="nomeLogin" placeholder="👤 Nome completo"></div>
   <div class="input-group"><input id="chaveLogin" placeholder="🔑 Chave da carteira" readonly onclick="this.removeAttribute('readonly');this.focus()"></div>
@@ -69,15 +70,19 @@ input{width:100%;padding:18px;border:2px solid #e1e5e9;border-radius:12px;font-s
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script>
 const SUPABASE_URL = 'https://acvzxoysjglaylrsrnmh.supabase.co';
-const SUPABASE_ANON_KEY = 'SUA_ANON_KEY_AQUI'; // ← PEGUE NO DASHBOARD!
+const SUPABASE_ANON_KEY = 'sb_publishable_wojRa33oQnvD7Q-8MEImLw_ENjObvs4';
 
 const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 let usuarioAtual = null, minhaCarteiraAtiva = null, subscription = null;
 
 async function initApp() {
-  await conectarRealtime();
-  setTimeout(gerarQR, 1000);
+  try {
+    await conectarRealtime();
+    setTimeout(gerarQR, 1000);
+  } catch(e) {
+    alert('Conectando Supabase...');
+  }
 }
 
 async function novaCarteira() {
@@ -87,10 +92,9 @@ async function novaCarteira() {
   const walletData = {
     id: `PAY${Date.now().toString(36).slice(-8)}${Math.random().toString(36).slice(-4)}`,
     nome,
-    private_key: `PAYEDE_${crypto.randomUUID()}`,
+    private_key: `PAYEDE_${crypto.randomUUID().replace(/-/g,'')}`,
     balance: 0,
-    status: 'criada',
-    created_at: new Date().toISOString()
+    status: 'criada'
   };
   
   const { data, error } = await supabase
@@ -99,13 +103,15 @@ async function novaCarteira() {
     .select()
     .single();
     
-  if(error) return alert('Erro: ' + error.message);
+  if(error) return alert('Erro: ' + error.message + '
+Execute SQL primeiro!');
   
   minhaCarteiraAtiva = data;
   usuarioAtual = nome;
   mostrarDashboard();
   copiarMinhaChave();
-  alert(`✅ ${data.id}`);
+  alert(`✅ ${data.id}
+👤 ${nome}`);
 }
 
 async function acessarCarteira() {
@@ -126,36 +132,49 @@ async function acessarCarteira() {
 
 async function ativar() {
   const txid = document.getElementById('txidPicPay').value.trim();
-  if(!txid || txid.length < 10) return alert('TXID inválido!');
+  if(!txid || txid.length < 10) return alert('TXID inválido (10+ chars)!');
   
-  const { data, error } = await supabase.rpc('ativar_carteira', {
-    wallet_id: minhaCarteiraAtiva.id,
-    txid_param: txid
-  });
-  
-  if(error) return alert('Erro: ' + error.message);
-  document.getElementById('meuSaldo').textContent = data.balance.toFixed(2) + ' EDE';
-  document.getElementById('secaoAtivar').style.display = 'none';
-  alert('✅ +10 EDE!');
+  try {
+    const { data, error } = await supabase.rpc('ativar_carteira', {
+      wallet_id: minhaCarteiraAtiva.id,
+      txid_param: txid
+    });
+    
+    if(error) throw error;
+    document.getElementById('meuSaldo').textContent = data.balance.toFixed(2) + ' EDE';
+    document.getElementById('secaoAtivar').style.display = 'none';
+    document.getElementById('statusTransferencia').innerHTML = '<div class="status success">✅ +10 EDE ativados!</div>';
+    alert('✅ +10 EDE!');
+  } catch(e) {
+    alert('Erro ativação: ' + e.message);
+  }
 }
 
 async function transferir() {
   const chaveDest = document.getElementById('chaveDestino').value.trim();
   const valor = parseFloat(document.getElementById('valorTransferir').value);
   
+  if(valor <= 0 || !Number.isFinite(valor)) return alert('Valor inválido!');
+  
   const { data: destino } = await supabase
     .from('wallets').select('id').eq('private_key', chaveDest).single();
     
-  if(!destino) return alert('Chave inválida!');
+  if(!destino) return alert('Chave destino inválida!');
   
-  const { data, error } = await supabase.rpc('transferir_ede', {
-    from_wallet: minhaCarteiraAtiva.id,
-    to_wallet: destino.id,
-    amount: valor
-  });
-  
-  if(error) return alert('Erro: ' + error.message);
-  alert('✅ Transferido!');
+  try {
+    const { data, error } = await supabase.rpc('transferir_ede', {
+      from_wallet: minhaCarteiraAtiva.id,
+      to_wallet: destino.id,
+      amount: valor
+    });
+    
+    if(error) throw error;
+    document.getElementById('statusTransferencia').innerHTML = '<div class="status success">✅ Transferido!</div>';
+    document.getElementById('chaveDestino').value = document.getElementById('valorTransferir').value = '';
+    alert(`✅ ${valor.toFixed(2)} EDE transferido!`);
+  } catch(e) {
+    alert('Erro transferência: ' + e.message);
+  }
 }
 
 function mostrarDashboard() {
@@ -171,28 +190,35 @@ function mostrarDashboard() {
 async function conectarRealtime() {
   subscription = supabase
     .channel('wallets')
-    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'wallets' }, 
+    .on('postgres_changes', 
+      { event: 'UPDATE', schema: 'public', table: 'wallets' }, 
       (payload) => {
         if(payload.new.id === minhaCarteiraAtiva?.id) {
           minhaCarteiraAtiva.balance = payload.new.balance;
           document.getElementById('meuSaldo').textContent = payload.new.balance.toFixed(2) + ' EDE';
         }
-      })
+      }
+    )
     .subscribe();
 }
 
 function copiarMinhaChave() {
   navigator.clipboard.writeText(document.getElementById('minhaChaveInput').value);
-  alert('✅ Copiada!');
+  alert('✅ Chave copiada!');
 }
 
 function sair() {
   document.getElementById('dashboard').classList.add('hidden');
   document.getElementById('telaLogin').classList.remove('hidden');
+  document.getElementById('nomeLogin').value = document.getElementById('chaveLogin').value = '';
 }
 
 function gerarQR() {
-  QRCode.toCanvas(document.getElementById('qrPicPay'), 'picpay://pay?username=jaedesystemint&amount=2.00');
+  try {
+    QRCode.toCanvas(document.getElementById('qrPicPay'), 'picpay://pay?username=jaedesystemint&amount=2.00');
+  } catch(e) {
+    document.getElementById('qrPicPay').innerHTML = 'QR PicPay: R$2,00 @jaedesystemint';
+  }
 }
 
 initApp();
