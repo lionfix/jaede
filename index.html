@@ -1,15 +1,11 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>⚡️ PAYEDE ASSOC. v21.1 </title>
+<title>⚡️ PAYEDE ASSOC. v22.0</title>
 <meta name="viewport" content="width=device-width">
-<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-<meta http-equiv="Pragma" content="no-cache">
-<meta http-equiv="Expires" content="0">
-<!-- FORÇA NOVO CACHE v21.1 -->
-<script>if(localStorage.getItem('payede_version') !== 'v21.1'){localStorage.clear();localStorage.setItem('payede_version','v21.1');window.location.reload();}</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-/* MESMO CSS anterior - abreviado */
+/* CSS v21.3 - igual ao anterior */
 *{margin:0;padding:0;box-sizing:border-box;}
 body{font-family:system-ui;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;padding:20px;color:white;}
 .login-screen{max-width:400px;margin:0 auto;background:white;color:#333;border-radius:20px;padding:40px;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
@@ -23,24 +19,16 @@ input{width:100%;padding:18px;border:2px solid #e1e5e9;border-radius:12px;font-s
 .card{background:white;border-radius:20px;padding:30px;margin:20px 0;box-shadow:0 10px 30px rgba(0,0,0,0.1);}
 .balance-display{font-size:32px;font-weight:bold;color:#4caf50;text-align:center;margin:20px 0;}
 .hidden{display:none;}
-.admin-wallet{background:#d4edda;border-left:6px solid #28a745;}
 </style>
 </head>
 <body>
 <div class="login-screen" id="telaLogin">
   <div class="logo">
-    <h1>⚡️ PAYEDE ASSOC. v21.1</h1>
-    <div style="font-size:14px;opacity:0.8;">✅ Cache Limpo - IDs Únicos</div>
+    <h1>⚡️ PAYEDE ASSOC. v22.0</h1>
+    <div style="font-size:14px;opacity:0.8;">✅ Supabase Realtime</div>
   </div>
-  
-  <div class="input-group">
-    <input id="nomeLogin" placeholder="👤 Nome completo">
-  </div>
-  
-  <div class="input-group">
-    <input id="chaveLogin" placeholder="🔑 Chave da carteira" readonly onclick="this.removeAttribute('readonly');this.focus()">
-  </div>
-  
+  <div class="input-group"><input id="nomeLogin" placeholder="👤 Nome completo"></div>
+  <div class="input-group"><input id="chaveLogin" placeholder="🔑 Chave da carteira" readonly onclick="this.removeAttribute('readonly');this.focus()"></div>
   <button class="btn btn-primary" onclick="acessarCarteira()">🚀 ACESSAR</button>
   <button class="btn btn-secondary" onclick="novaCarteira()" style="font-size:14px;padding:12px;">➕ CRIAR</button>
 </div>
@@ -49,13 +37,6 @@ input{width:100%;padding:18px;border:2px solid #e1e5e9;border-radius:12px;font-s
   <div style="background:rgba(255,255,255,0.1);padding:20px;border-radius:15px;text-align:center;margin-bottom:20px;">
     <h2>Bem-vindo(a), <span id="nomeUsuarioDash" style="color:#4caf50;"></span>!</h2>
     <button class="btn btn-secondary" onclick="sair()" style="width:auto;padding:10px 20px;">🔐 Sair</button>
-  </div>
-  
-  <div id="secaoAdmin" class="card admin-wallet hidden">
-    <h3>👑 Admin</h3>
-    <div class="balance-display" id="adminSaldo">10.000,00 EDE</div>
-    <div>PAYEDE_INT_ADMIN_10000_7b4f2a9c8d3e5f1g2h3i4j5k6l7m8n9o</div>
-    <button class="btn btn-success" onclick="copiarAdmin()">📋 Copiar</button>
   </div>
   
   <div class="card">
@@ -69,11 +50,11 @@ input{width:100%;padding:18px;border:2px solid #e1e5e9;border-radius:12px;font-s
   </div>
   
   <div class="card" id="secaoAtivar" style="display:none;">
-    <h3>💰 Ativar</h3>
+    <h3>💰 Ativar (+10 EDE)</h3>
     <canvas id="qrPicPay" style="display:block;margin:15px auto;width:200px;height:200px;"></canvas>
     <div style="text-align:center;font-size:18px;font-weight:bold;margin:15px 0;">R$ 2,00 PicPay</div>
     <input id="txidPicPay" placeholder="📋 ID transação">
-    <button class="btn btn-primary" onclick="ativar()">🚀 +10 EDE</button>
+    <button class="btn btn-primary" onclick="ativar()">🚀 CONFIRMAR</button>
   </div>
   
   <div class="card">
@@ -87,151 +68,132 @@ input{width:100%;padding:18px;border:2px solid #e1e5e9;border-radius:12px;font-s
 
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 <script>
-// v21.1 - CACHE BUSTER + IDs ÚNICOS
-const CHAVE_USUARIO = 'payede_user';
-const CHAVE_TODAS = 'payede_all';
-const CHAVE_PAGAMENTOS = 'payede_pagos';
+const SUPABASE_URL = 'https://acvzxoysjglaylrsrnmh.supabase.co';
+const SUPABASE_ANON_KEY = 'SUA_ANON_KEY_AQUI'; // ← PEGUE NO DASHBOARD!
 
-let minhasCarteiras = [], todasCarteiras = [], minhaCarteiraAtiva = null, usuarioAtual = null, pagamentos = new Set(), isAdmin = false;
+const supabase = Supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-function gerarIDUnico() {
-  const ts = Date.now().toString().slice(-6);
-  const rand = Math.random().toString(36).substr(2, 4).toUpperCase();
-  return `PAY${ts}${rand}`;
+let usuarioAtual = null, minhaCarteiraAtiva = null, subscription = null;
+
+async function initApp() {
+  await conectarRealtime();
+  setTimeout(gerarQR, 1000);
 }
 
-function migrarDadosAntigos() {
-  const versoes = ['payede_data_v21', 'payede_data_v209', 'payede_todas_v21'];
-  for(let v of versoes) {
-    let data = localStorage.getItem(v);
-    if(data) {
-      try {
-        todasCarteiras = JSON.parse(data);
-        localStorage.removeItem(v);
-      } catch(e) {}
-    }
-  }
-  if(!todasCarteiras.find(w => w.id === 'PAY000000')) {
-    todasCarteiras.unshift({id:'PAY000000',nome:'Seylor Senesh',privateKey:'PAYEDE_INT_ADMIN_10000_7b4f2a9c8d3e5f1g2h3i4j5k6l7m8n9o',balance:10000,status:'admin'});
-  }
-}
-
-function carregarMinhasCarteiras(nome) {
-  let data = localStorage.getItem(`${CHAVE_USUARIO}_${nome}`);
-  if(data) try { minhasCarteiras = JSON.parse(data); return true; } catch(e) {}
-  return false;
-}
-
-function salvarMinhasCarteiras(nome) {
-  localStorage.setItem(`${CHAVE_USUARIO}_${nome}`, JSON.stringify(minhasCarteiras));
-}
-
-function salvarTudo() {
-  localStorage.setItem(CHAVE_TODAS, JSON.stringify(todasCarteiras));
-  localStorage.setItem(CHAVE_PAGAMENTOS, JSON.stringify([...pagamentos]));
-}
-
-function initApp() { migrarDadosAntigos(); setTimeout(gerarQR,1000); }
-
-function novaCarteira() {
-  let nome = document.getElementById('nomeLogin').value.trim();
+async function novaCarteira() {
+  const nome = document.getElementById('nomeLogin').value.trim();
   if(!nome) return alert('Nome inválido!');
   
-  carregarMinhasCarteiras(nome) || (minhasCarteiras = []);
-  usuarioAtual = nome; isAdmin = false;
-  
-  let nova = {
-    id: gerarIDUnico(),
-    nome, 
-    privateKey: 'PAYEDE_privado_' + Date.now() + '_' + Math.random().toString(36).substr(2,25),
+  const walletData = {
+    id: `PAY${Date.now().toString(36).slice(-8)}${Math.random().toString(36).slice(-4)}`,
+    nome,
+    private_key: `PAYEDE_${crypto.randomUUID()}`,
     balance: 0,
-    status: 'criada'
+    status: 'criada',
+    created_at: new Date().toISOString()
   };
   
-  while(todasCarteiras.find(w => w.id === nova.id)) nova.id = gerarIDUnico();
+  const { data, error } = await supabase
+    .from('wallets')
+    .insert([walletData])
+    .select()
+    .single();
+    
+  if(error) return alert('Erro: ' + error.message);
   
-  minhasCarteiras.push(nova); todasCarteiras.push(nova); minhaCarteiraAtiva = nova;
-  mostrarDashboard(); salvarMinhasCarteiras(nome); salvarTudo(); copiarMinhaChave();
-  alert(`✅ ${nova.id}
-👤 ${nome}`);
+  minhaCarteiraAtiva = data;
+  usuarioAtual = nome;
+  mostrarDashboard();
+  copiarMinhaChave();
+  alert(`✅ ${data.id}`);
 }
 
-function acessarCarteira() {
-  let nome = document.getElementById('nomeLogin').value.trim(), chave = document.getElementById('chaveLogin').value.trim();
+async function acessarCarteira() {
+  const nome = document.getElementById('nomeLogin').value.trim();
+  const chave = document.getElementById('chaveLogin').value.trim();
   
-  if(chave) {
-    minhaCarteiraAtiva = todasCarteiras.find(w => w.privateKey === chave);
-    if(minhaCarteiraAtiva) {
-      usuarioAtual = minhaCarteiraAtiva.nome; isAdmin = minhaCarteiraAtiva.id === 'PAY000000';
-      if(!isAdmin) carregarMinhasCarteiras(usuarioAtual);
-      mostrarDashboard(); return;
-    }
-    return alert('❌ Chave inválida!');
-  }
+  let query = supabase.from('wallets').select('*');
+  if(chave) query = query.eq('private_key', chave);
+  else if(nome) query = query.eq('nome', nome).limit(1);
   
-  if(nome) {
-    if(carregarMinhasCarteiras(nome)) {
-      usuarioAtual = nome; isAdmin = false; minhaCarteiraAtiva = minhasCarteiras[0];
-      mostrarDashboard(); return;
-    }
-  }
+  const { data, error } = await query;
+  if(error || !data?.[0]) return alert('Carteira não encontrada!');
   
-  if(nome && confirm('Criar nova?')) novaCarteira();
-  else alert(`${nome} não tem carteira!`);
+  minhaCarteiraAtiva = data[0];
+  usuarioAtual = minhaCarteiraAtiva.nome;
+  mostrarDashboard();
+}
+
+async function ativar() {
+  const txid = document.getElementById('txidPicPay').value.trim();
+  if(!txid || txid.length < 10) return alert('TXID inválido!');
+  
+  const { data, error } = await supabase.rpc('ativar_carteira', {
+    wallet_id: minhaCarteiraAtiva.id,
+    txid_param: txid
+  });
+  
+  if(error) return alert('Erro: ' + error.message);
+  document.getElementById('meuSaldo').textContent = data.balance.toFixed(2) + ' EDE';
+  document.getElementById('secaoAtivar').style.display = 'none';
+  alert('✅ +10 EDE!');
+}
+
+async function transferir() {
+  const chaveDest = document.getElementById('chaveDestino').value.trim();
+  const valor = parseFloat(document.getElementById('valorTransferir').value);
+  
+  const { data: destino } = await supabase
+    .from('wallets').select('id').eq('private_key', chaveDest).single();
+    
+  if(!destino) return alert('Chave inválida!');
+  
+  const { data, error } = await supabase.rpc('transferir_ede', {
+    from_wallet: minhaCarteiraAtiva.id,
+    to_wallet: destino.id,
+    amount: valor
+  });
+  
+  if(error) return alert('Erro: ' + error.message);
+  alert('✅ Transferido!');
 }
 
 function mostrarDashboard() {
   document.getElementById('telaLogin').classList.add('hidden');
   document.getElementById('dashboard').classList.remove('hidden');
   document.getElementById('nomeUsuarioDash').textContent = usuarioAtual;
-  document.getElementById('meuSaldo').textContent = minhaCarteiraAtiva.balance.toFixed(2)+' EDE';
+  document.getElementById('meuSaldo').textContent = minhaCarteiraAtiva.balance.toFixed(2) + ' EDE';
   document.getElementById('minhaWalletId').textContent = minhaCarteiraAtiva.id;
-  document.getElementById('minhaChaveInput').value = minhaCarteiraAtiva.privateKey;
-  
-  document.getElementById('secaoAdmin').classList.add('hidden');
-  if(isAdmin) {
-    document.getElementById('adminSaldo').textContent = minhaCarteiraAtiva.balance.toFixed(2)+' EDE';
-    document.getElementById('secaoAdmin').classList.remove('hidden');
-  }
-  if(minhaCarteiraAtiva.balance === 0 && !isAdmin) document.getElementById('secaoAtivar').style.display = 'block';
+  document.getElementById('minhaChaveInput').value = minhaCarteiraAtiva.private_key;
+  if(minhaCarteiraAtiva.balance === 0) document.getElementById('secaoAtivar').style.display = 'block';
 }
 
-function ativar() {
-  let txid = document.getElementById('txidPicPay').value.trim();
-  if(!txid || pagamentos.has(txid)) return alert(pagamentos.has(txid) ? 'TXID usado!' : 'Digite TXID!');
-  minhaCarteiraAtiva.balance += 10; minhaCarteiraAtiva.status = 'ativa'; pagamentos.add(txid);
-  let i1 = minhasCarteiras.findIndex(w => w.id === minhaCarteiraAtiva.id);
-  if(i1>-1) minhasCarteiras[i1] = minhaCarteiraAtiva;
-  let i2 = todasCarteiras.findIndex(w => w.id === minhaCarteiraAtiva.id);
-  if(i2>-1) todasCarteiras[i2] = minhaCarteiraAtiva;
-  salvarMinhasCarteiras(usuarioAtual); salvarTudo();
-  document.getElementById('meuSaldo').textContent = minhaCarteiraAtiva.balance.toFixed(2)+' EDE';
-  document.getElementById('txidPicPay').value = ''; alert('✅ +10 EDE!');
+async function conectarRealtime() {
+  subscription = supabase
+    .channel('wallets')
+    .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'wallets' }, 
+      (payload) => {
+        if(payload.new.id === minhaCarteiraAtiva?.id) {
+          minhaCarteiraAtiva.balance = payload.new.balance;
+          document.getElementById('meuSaldo').textContent = payload.new.balance.toFixed(2) + ' EDE';
+        }
+      })
+    .subscribe();
 }
 
-function transferir() {
-  let chaveDest = document.getElementById('chaveDestino').value.trim(), valor = parseFloat(document.getElementById('valorTransferir').value);
-  let destino = todasCarteiras.find(w => w.privateKey === chaveDest);
-  if(!destino) return alert('❌ Chave inválida!');
-  if(minhaCarteiraAtiva.balance < valor) return alert('❌ Saldo insuficiente!');
-  
-  minhaCarteiraAtiva.balance -= valor; destino.balance += valor; destino.status = 'ativa';
-  let i1 = minhasCarteiras.findIndex(w => w.id === minhaCarteiraAtiva.id);
-  if(i1>-1) minhasCarteiras[i1] = minhaCarteiraAtiva;
-  let i2 = todasCarteiras.findIndex(w => w.id === destino.id);
-  if(i2>-1) todasCarteiras[i2] = destino;
-  
-  salvarMinhasCarteiras(usuarioAtual); salvarTudo();
-  document.getElementById('meuSaldo').textContent = minhaCarteiraAtiva.balance.toFixed(2)+' EDE';
-  document.getElementById('statusTransferencia').innerHTML = '<div class="status success">✅ Transferido!</div>';
-  document.getElementById('chaveDestino').value = document.getElementById('valorTransferir').value = '';
+function copiarMinhaChave() {
+  navigator.clipboard.writeText(document.getElementById('minhaChaveInput').value);
+  alert('✅ Copiada!');
 }
 
-function copiarMinhaChave() {navigator.clipboard.writeText(document.getElementById('minhaChaveInput').value);alert('✅ Copiada!');}
-function copiarAdmin() {navigator.clipboard.writeText('PAYEDE_INT_ADMIN_10000_7b4f2a9c8d3e5f1g2h3i4j5k6l7m8n9o');alert('✅ Admin!');}
-function sair() {document.getElementById('dashboard').classList.add('hidden');document.getElementById('telaLogin').classList.remove('hidden');}
+function sair() {
+  document.getElementById('dashboard').classList.add('hidden');
+  document.getElementById('telaLogin').classList.remove('hidden');
+}
 
-function gerarQR() {try{QRCode.toCanvas(document.getElementById('qrPicPay'),'picpay://pay?username=jaedesystemint&amount=2.00');}catch(e){}}
+function gerarQR() {
+  QRCode.toCanvas(document.getElementById('qrPicPay'), 'picpay://pay?username=jaedesystemint&amount=2.00');
+}
 
 initApp();
 </script>
