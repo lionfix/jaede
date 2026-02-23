@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
-  <title>⚡️ PAYEDE ASSOC. v23.0 - Fintech (Moeda Digital)</title>
+  <title>⚡️ PAYEDE ASSOC. v23.0 - Fintech (EDE)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
@@ -30,7 +30,6 @@
     .status.ok{background:#d4edda;color:#155724;}
     .status.err{background:#f8d7da;color:#721c24;}
     .small{font-size:12px;opacity:.85}
-    a{color:#1f7a37;text-decoration:none}
     code{background:#f1f3f5;padding:2px 6px;border-radius:6px}
   </style>
 </head>
@@ -38,11 +37,10 @@
 <body>
   <div class="wrap">
 
-    <!-- HEADER -->
     <div class="card">
       <div class="logo">
         <h1>⚡️ PAYEDE ASSOC. v23.0</h1>
-        <div class="muted">Fintech-style (seguro) • Moeda digital <b>EDE</b> • Supabase Auth + Ledger</div>
+        <div class="muted">Fintech-style • Moeda digital <b>EDE</b> • Auth + Ledger + RPC</div>
       </div>
       <div id="globalStatus" class="status info" style="display:none;"></div>
     </div>
@@ -69,11 +67,11 @@
       </div>
 
       <div class="small" style="margin-top:6px;">
-        ⚠️ Segurança real: sem saldo editável no front. Transferências via <code>RPC</code>.
+        Segurança real: saldo não é editável no front. Transferências via <code>RPC</code>.
       </div>
     </div>
 
-    <!-- ONBOARD (criar carteira) -->
+    <!-- ONBOARD -->
     <div id="screenOnboard" class="card hidden">
       <div style="display:flex;justify-content:space-between;align-items:center;">
         <h3>👤 Criar sua carteira</h3>
@@ -86,7 +84,7 @@
       <button class="btn btn-primary" onclick="createAccount()">💳 Criar carteira</button>
 
       <div class="small">
-        Sua carteira gera uma chave pública (para receber EDE). Chave privada não é usada aqui — sua conta é protegida pelo login.
+        Sua carteira gera uma chave pública para receber EDE. A conta é protegida pelo login.
       </div>
     </div>
 
@@ -105,9 +103,9 @@
         <div class="balance" id="balanceEde">0.00 EDE</div>
 
         <div class="box">
-          <div><b>💳 Carteira:</b> <span id="publicKey"></span></div>
+          <div><b>💳 Chave pública:</b> <span id="publicKey"></span></div>
           <div style="margin-top:8px" class="row">
-            <button class="btn btn-secondary" onclick="copyPublicKey()" style="margin:0;">📋 Copiar chave</button>
+            <button class="btn btn-secondary" onclick="copyPublicKey()" style="margin:0;">📋 Copiar</button>
             <button class="btn btn-secondary" onclick="refreshAll()" style="margin:0;">🔄 Atualizar</button>
           </div>
         </div>
@@ -123,7 +121,7 @@
         </div>
 
         <div class="input-group">
-          <input id="toPublicKey" placeholder="🔑 Chave pública destino (PAYEDE_...)">
+          <input id="toPublicKey" placeholder="🔑 Chave destino (PAYEDE_...)">
         </div>
 
         <div class="input-group">
@@ -131,28 +129,11 @@
         </div>
 
         <button class="btn btn-primary" onclick="send()">🚀 Enviar</button>
-
         <div id="txStatus" class="status info" style="display:none;"></div>
 
         <div class="small">
-          Dica: EDE usa centavos internamente (integer) para evitar bugs de decimal.
+          EDE usa centavos internamente (integer) para evitar bugs de decimal.
         </div>
-      </div>
-
-      <!-- (OPCIONAL) "Depósito" DEMO: só para testes -->
-      <div class="card">
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <h3>🧪 Crédito de teste</h3>
-          <span class="pill">DEV</span>
-        </div>
-        <div class="small">
-          Isso é apenas para testes (moeda digital). Em produção, depósito real exigiria integração e validação do provedor.
-        </div>
-        <div class="row" style="margin-top:10px;">
-          <button class="btn btn-secondary" onclick="devCredit(100)" style="margin:0;">+1.00 EDE</button>
-          <button class="btn btn-secondary" onclick="devCredit(1000)" style="margin:0;">+10.00 EDE</button>
-        </div>
-        <div id="devStatus" class="status info" style="display:none;"></div>
       </div>
 
     </div>
@@ -160,18 +141,16 @@
 
   <script>
     // =========================
-    // ✅ CONFIGURE AQUI
+    // ✅ SEU SUPABASE (OK)
     // =========================
-    const SUPABASE_URL = 'https://acvzxoysjglaylrsrnmh.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_wojRa33oQnvD7Q-8MEImLw_ENjObvs4';
+    const SUPABASE_URL = 'https://ngqxvmmurmkhfjgmzvzb.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_xjxvw1mUSnl7WXYTG2G_zw_dr8SrMdF';
     const supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // IDs locais
     let sessionUser = null;
     let myAccountId = null;
     let myPublicKey = null;
 
-    // Mostrar erros JS na tela (Android-friendly)
     window.onerror = function (msg, url, line, col, err) {
       showGlobal(`❌ ERRO JS: ${String(msg)} (linha ${line}:${col})`, 'err');
       console.error('JS ERROR:', msg, url, line, col, err);
@@ -185,29 +164,24 @@
       el.className = 'status ' + (kind === 'ok' ? 'ok' : kind === 'err' ? 'err' : 'info');
       el.innerHTML = msg;
     }
-
     function hide(elId) {
       const el = document.getElementById(elId);
       if (!el) return;
       el.style.display = 'none';
       el.innerHTML = '';
     }
-
     function showGlobal(msg, kind='info') {
       show('globalStatus', msg, kind);
-      // auto-hide leve
       setTimeout(() => hide('globalStatus'), 9000);
     }
 
-    function centsFromEdeString(v) {
+    function centsFromEde(v) {
       const n = Number(v);
       if (!Number.isFinite(n) || n <= 0) return null;
-      return Math.round(n * 100); // 2 casas
+      return Math.round(n * 100);
     }
-
-    function formatEdeFromCents(cents) {
-      const n = (Number(cents) || 0) / 100;
-      return n.toFixed(2) + ' EDE';
+    function formatEde(cents) {
+      return ((Number(cents) || 0) / 100).toFixed(2) + ' EDE';
     }
 
     function setScreen(name) {
@@ -218,11 +192,9 @@
     }
 
     async function bootstrap() {
-      // Restaura sessão
       const { data } = await supa.auth.getSession();
       sessionUser = data?.session?.user ?? null;
 
-      // listener de auth
       supa.auth.onAuthStateChange(async (_event, newSession) => {
         sessionUser = newSession?.user ?? null;
         await route();
@@ -232,7 +204,7 @@
     }
 
     async function route() {
-      hide('dashStatus'); hide('txStatus'); hide('devStatus');
+      hide('dashStatus'); hide('txStatus');
 
       if (!sessionUser) {
         setScreen('screenAuth');
@@ -241,43 +213,37 @@
 
       document.getElementById('whoami').textContent = sessionUser.email;
 
-      // tenta achar conta do user
+      // RLS: retorna só conta do próprio usuário
       const { data, error } = await supa
         .from('accounts')
         .select('id, public_key')
         .limit(1);
 
-      // Se RLS estiver ok, esse select retorna só do próprio usuário
       if (error) {
-        showGlobal(`⚠️ Erro ao ler carteira: ${error.message}`, 'err');
-        // Ainda assim mostra dash com status
         setScreen('screenDash');
-        show('dashStatus', `❌ Não consegui ler sua carteira. Verifique RLS/SQL. <br><b>${error.message}</b>`, 'err');
+        show('dashStatus', `❌ Não consegui ler sua carteira (RLS/SQL).<br><b>${error.message}</b>`, 'err');
         return;
       }
 
       if (!data || data.length === 0) {
-        // precisa criar carteira
         setScreen('screenOnboard');
         return;
       }
 
       myAccountId = data[0].id;
       myPublicKey = data[0].public_key;
+
       setScreen('screenDash');
       await refreshAll();
     }
 
-    // =========================
     // AUTH
-    // =========================
     async function signUp() {
       const email = document.getElementById('authEmail').value.trim();
       const password = document.getElementById('authPass').value.trim();
       if (!email || password.length < 6) return showGlobal('❌ Informe email e senha (6+).', 'err');
 
       showGlobal('⏳ Criando conta...', 'info');
-
       const { error } = await supa.auth.signUp({ email, password });
       if (error) return showGlobal('❌ ' + error.message, 'err');
 
@@ -290,7 +256,6 @@
       if (!email || !password) return showGlobal('❌ Informe email e senha.', 'err');
 
       showGlobal('⏳ Entrando...', 'info');
-
       const { data, error } = await supa.auth.signInWithPassword({ email, password });
       if (error) return showGlobal('❌ ' + error.message, 'err');
 
@@ -311,27 +276,20 @@
 
     async function logout() {
       await supa.auth.signOut();
-      sessionUser = null;
-      myAccountId = null;
-      myPublicKey = null;
+      sessionUser = null; myAccountId = null; myPublicKey = null;
       showGlobal('🔐 Você saiu.', 'info');
       setScreen('screenAuth');
     }
 
-    // =========================
-    // CRIAR CARTEIRA (RPC)
-    // Precisa da função SQL: create_account(p_full_name text)
-    // =========================
+    // ONBOARD (RPC)
     async function createAccount() {
       const fullName = document.getElementById('fullName').value.trim();
       if (!fullName) return showGlobal('❌ Informe seu nome.', 'err');
 
       showGlobal('⏳ Criando carteira...', 'info');
-
       const { data, error } = await supa.rpc('create_account', { p_full_name: fullName });
       if (error) return showGlobal('❌ ' + error.message, 'err');
 
-      // data é array com {account_id, public_key}
       const row = data?.[0];
       if (!row) return showGlobal('❌ RPC não retornou dados.', 'err');
 
@@ -343,45 +301,34 @@
       await refreshAll();
     }
 
-    // =========================
-    // DASH: saldo (view)
-    // Precisa da view: account_balances
-    // =========================
+    // DASH
     async function refreshAll() {
       if (!myAccountId) return;
 
-      show('dashStatus', '⏳ Atualizando saldo...', 'info');
+      show('dashStatus', '⏳ Atualizando...', 'info');
 
-      // pega carteira do user (garante chave atual)
       const { data: acc, error: e1 } = await supa
         .from('accounts')
         .select('id, public_key')
         .eq('id', myAccountId)
         .single();
 
-      if (e1) {
-        show('dashStatus', '❌ Erro ao ler conta: ' + e1.message, 'err');
-        return;
-      }
+      if (e1) return show('dashStatus', '❌ Erro conta: ' + e1.message, 'err');
 
       myPublicKey = acc.public_key;
       document.getElementById('publicKey').textContent = myPublicKey;
 
-      // pega saldo via view
       const { data: bal, error: e2 } = await supa
         .from('account_balances')
         .select('balance_cents')
         .eq('account_id', myAccountId)
         .single();
 
-      if (e2) {
-        show('dashStatus', '❌ Erro ao ler saldo: ' + e2.message, 'err');
-        return;
-      }
+      if (e2) return show('dashStatus', '❌ Erro saldo: ' + e2.message, 'err');
 
-      document.getElementById('balanceEde').textContent = formatEdeFromCents(bal.balance_cents);
-      show('dashStatus', '✅ Saldo atualizado.', 'ok');
-      setTimeout(() => hide('dashStatus'), 2500);
+      document.getElementById('balanceEde').textContent = formatEde(bal.balance_cents);
+      show('dashStatus', '✅ OK.', 'ok');
+      setTimeout(() => hide('dashStatus'), 2000);
     }
 
     async function copyPublicKey() {
@@ -389,24 +336,21 @@
         await navigator.clipboard.writeText(myPublicKey || '');
         showGlobal('✅ Chave copiada!', 'ok');
       } catch {
-        showGlobal('⚠️ Não consegui copiar automaticamente. Copie manualmente: ' + (myPublicKey || ''), 'info');
+        showGlobal('⚠️ Copie manualmente: ' + (myPublicKey || ''), 'info');
       }
     }
 
-    // =========================
-    // TRANSFER (RPC atômica)
-    // Precisa da função SQL: transfer(...)
-    // =========================
+    // TRANSFER (RPC)
     async function send() {
       const toKey = document.getElementById('toPublicKey').value.trim();
-      const cents = centsFromEdeString(document.getElementById('amountEde').value);
+      const cents = centsFromEde(document.getElementById('amountEde').value);
 
       if (!toKey.startsWith('PAYEDE_')) return show('txStatus', '❌ Chave destino inválida.', 'err');
       if (!cents) return show('txStatus', '❌ Valor inválido.', 'err');
 
       const idem = 'tx_' + Date.now() + '_' + Math.random().toString(16).slice(2);
 
-      show('txStatus', '⏳ Enviando (RPC)...', 'info');
+      show('txStatus', '⏳ Enviando...', 'info');
 
       const { data, error } = await supa.rpc('transfer', {
         p_from_public_key: myPublicKey,
@@ -415,10 +359,7 @@
         p_idempotency_key: idem
       });
 
-      if (error) {
-        // erros comuns: insufficient_funds, to_account_not_found, etc
-        return show('txStatus', '❌ ' + error.message, 'err');
-      }
+      if (error) return show('txStatus', '❌ ' + error.message, 'err');
 
       const row = data?.[0];
       show('txStatus', `✅ Transferência concluída!<br>ID: <code>${row.transfer_id}</code><br>Status: <b>${row.status}</b>`, 'ok');
@@ -429,31 +370,6 @@
       await refreshAll();
     }
 
-    // =========================
-    // DEV CREDIT (opcional)
-    // Para funcionar, crie um RPC DEV ou rode SQL manualmente.
-    // Aqui vamos fazer via RPC "dev_credit" se você quiser criar.
-    // =========================
-    async function devCredit(amountCents) {
-      show('devStatus', '⏳ Creditando (DEV)...', 'info');
-
-      // Você pode criar essa função no SQL se quiser:
-      // create function dev_credit(p_public_key text, p_amount_cents bigint) ...
-      const { data, error } = await supa.rpc('dev_credit', {
-        p_public_key: myPublicKey,
-        p_amount_cents: amountCents
-      });
-
-      if (error) {
-        return show('devStatus', `⚠️ DEV credit não configurado no banco.<br><b>${error.message}</b><br>
-        Se quiser, eu te mando o SQL da função <code>dev_credit</code>.`, 'err');
-      }
-
-      show('devStatus', '✅ Crédito aplicado!', 'ok');
-      await refreshAll();
-    }
-
-    // start
     bootstrap();
   </script>
 </body>
