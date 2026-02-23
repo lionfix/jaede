@@ -2,427 +2,459 @@
 <html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
-  <title>⚡️ PAYEDE ASSOC. v22.1 - BOTÕES OK</title>
+  <title>⚡️ PAYEDE ASSOC. v23.0 - Fintech (Moeda Digital)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     *{margin:0;padding:0;box-sizing:border-box;}
     body{font-family:system-ui;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;padding:20px;color:white;}
-    .login-screen{max-width:400px;margin:0 auto;background:white;color:#333;border-radius:20px;padding:40px;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
-    .logo h1{font-size:28px;background:linear-gradient(135deg,#4caf50,#28a745);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
-    .input-group{margin:20px 0;}
-    input{width:100%;padding:18px;border:2px solid #e1e5e9;border-radius:12px;font-size:16px;}
-    .btn{width:100%;padding:18px;border:none;border-radius:12px;font-size:18px;font-weight:600;cursor:pointer;margin:10px 0;}
+    .wrap{max-width:420px;margin:0 auto;}
+    .card{background:white;color:#333;border-radius:20px;padding:28px;margin:14px 0;box-shadow:0 20px 60px rgba(0,0,0,0.25);}
+    .logo h1{font-size:26px;background:linear-gradient(135deg,#4caf50,#28a745);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;}
+    .muted{opacity:.75;font-size:13px;margin-top:6px}
+    .input-group{margin:14px 0;}
+    input{width:100%;padding:16px;border:2px solid #e1e5e9;border-radius:12px;font-size:15px;outline:none;}
+    input:focus{border-color:#4caf50}
+    .btn{width:100%;padding:16px;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;margin:8px 0;}
     .btn-primary{background:linear-gradient(135deg,#4caf50,#45a049);color:white;}
-    .btn-success{background:linear-gradient(135deg,#28a745,#20c997);color:white;}
     .btn-secondary{background:#6c757d;color:white;}
-    .card{background:white;border-radius:20px;padding:30px;margin:20px 0;box-shadow:0 10px 30px rgba(0,0,0,0.1);color:#333;}
-    .balance-display{font-size:32px;font-weight:bold;color:#4caf50;text-align:center;margin:20px 0;}
+    .btn-danger{background:#dc3545;color:white;}
+    .row{display:flex;gap:10px}
+    .row > *{flex:1}
     .hidden{display:none;}
-    .status{padding:15px;border-radius:8px;margin:10px 0;text-align:center;}
-    .status.success{background:#d4edda;color:#155724;}
-    .status.error{background:#f8d7da;color:#721c24;}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;background:#eef6ee;color:#1f7a37;font-weight:700}
+    .balance{font-size:34px;font-weight:900;color:#1f7a37;text-align:center;margin:14px 0;}
+    .box{background:#f4f7fb;border-radius:14px;padding:12px;margin-top:10px;font-size:13px}
+    .status{padding:12px;border-radius:12px;margin-top:10px;font-size:13px;line-height:1.35}
     .status.info{background:#e7f3ff;color:#0b3d91;}
-    #statusDebug{color:#666;font-size:12px;margin:10px 0;line-height:1.4;}
+    .status.ok{background:#d4edda;color:#155724;}
+    .status.err{background:#f8d7da;color:#721c24;}
+    .small{font-size:12px;opacity:.85}
+    a{color:#1f7a37;text-decoration:none}
+    code{background:#f1f3f5;padding:2px 6px;border-radius:6px}
   </style>
 </head>
 
 <body>
-  <!-- LOGIN -->
-  <div class="login-screen" id="telaLogin">
-    <div class="logo">
-      <h1>⚡️ PAYEDE ASSOC. v22.1 ✅</h1>
-      <div style="font-size:14px;opacity:0.8;">🔧 Supabase v2 - Botões Corrigidos</div>
-    </div>
+  <div class="wrap">
 
-    <div class="input-group">
-      <input id="nomeLogin" placeholder="👤 Nome completo" autocomplete="name">
-    </div>
-
-    <div class="input-group">
-      <input id="chaveLogin" placeholder="🔑 Chave da carteira" autocomplete="off"
-             readonly onclick="this.removeAttribute('readonly');this.focus()">
-    </div>
-
-    <button class="btn btn-primary" onclick="acessarCarteira()">🚀 ACESSAR</button>
-    <button class="btn btn-secondary" onclick="novaCarteira()" style="font-size:14px;padding:12px;">➕ CRIAR</button>
-
-    <div id="statusDebug"></div>
-  </div>
-
-  <!-- DASH -->
-  <div id="dashboard" class="hidden">
-    <div style="background:rgba(255,255,255,0.1);padding:20px;border-radius:15px;text-align:center;margin-bottom:20px;">
-      <h2>Bem-vindo(a), <span id="nomeUsuarioDash" style="color:#4caf50;"></span>!</h2>
-      <button class="btn btn-secondary" onclick="sair()" style="width:auto;padding:10px 20px;">🔐 Sair</button>
-    </div>
-
+    <!-- HEADER -->
     <div class="card">
-      <h3>💳 Carteira Ativa</h3>
-      <div class="balance-display" id="meuSaldo">0,00 EDE</div>
+      <div class="logo">
+        <h1>⚡️ PAYEDE ASSOC. v23.0</h1>
+        <div class="muted">Fintech-style (seguro) • Moeda digital <b>EDE</b> • Supabase Auth + Ledger</div>
+      </div>
+      <div id="globalStatus" class="status info" style="display:none;"></div>
+    </div>
 
-      <div style="background:#f0f8f0;padding:15px;border-radius:10px;margin:15px 0;">
-        🆔 <span id="minhaWalletId"></span><br><br>
-        🔐 <input id="minhaChaveInput" readonly style="font-size:14px;">
+    <!-- AUTH -->
+    <div id="screenAuth" class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <h3>🔐 Entrar</h3>
+        <span class="pill">AUTH</span>
       </div>
 
-      <button class="btn btn-success" onclick="copiarMinhaChave()">📋 Copiar Chave</button>
+      <div class="input-group">
+        <input id="authEmail" type="email" placeholder="📧 Email" autocomplete="email">
+      </div>
+      <div class="input-group">
+        <input id="authPass" type="password" placeholder="🔑 Senha (6+)" autocomplete="current-password">
+      </div>
+
+      <button class="btn btn-primary" onclick="signIn()">🚀 Entrar</button>
+
+      <div class="row">
+        <button class="btn btn-secondary" onclick="signUp()">➕ Criar conta</button>
+        <button class="btn btn-secondary" onclick="resetPass()">📩 Esqueci</button>
+      </div>
+
+      <div class="small" style="margin-top:6px;">
+        ⚠️ Segurança real: sem saldo editável no front. Transferências via <code>RPC</code>.
+      </div>
     </div>
 
-    <div class="card" id="secaoAtivar" style="display:none;">
-      <h3>💰 Ativar (+10 EDE)</h3>
-      <canvas id="qrPicPay" style="display:block;margin:15px auto;width:200px;height:200px;"></canvas>
-      <div style="text-align:center;font-size:18px;font-weight:bold;margin:15px 0;">R$ 2,00 PicPay</div>
-      <input id="txidPicPay" placeholder="📋 ID transação">
-      <button class="btn btn-primary" onclick="ativar()">🚀 CONFIRMAR</button>
+    <!-- ONBOARD (criar carteira) -->
+    <div id="screenOnboard" class="card hidden">
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <h3>👤 Criar sua carteira</h3>
+        <span class="pill">ONBOARD</span>
+      </div>
+
+      <div class="input-group">
+        <input id="fullName" placeholder="👤 Nome completo">
+      </div>
+      <button class="btn btn-primary" onclick="createAccount()">💳 Criar carteira</button>
+
+      <div class="small">
+        Sua carteira gera uma chave pública (para receber EDE). Chave privada não é usada aqui — sua conta é protegida pelo login.
+      </div>
     </div>
 
-    <div class="card">
-      <h3>🔀 Transferir</h3>
-      <input id="chaveDestino" placeholder="🔑 Chave destino">
-      <input id="valorTransferir" type="number" step="0.01" placeholder="💰 Valor EDE">
-      <button class="btn btn-primary" onclick="transferir()">🚀 Transferir</button>
-      <div id="statusTransferencia"></div>
+    <!-- DASH -->
+    <div id="screenDash" class="hidden">
+
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <div class="pill">DASH</div>
+            <div class="small" style="margin-top:8px;">Logado como: <span id="whoami"></span></div>
+          </div>
+          <button class="btn btn-danger" style="width:auto;padding:10px 14px;margin:0" onclick="logout()">Sair</button>
+        </div>
+
+        <div class="balance" id="balanceEde">0.00 EDE</div>
+
+        <div class="box">
+          <div><b>💳 Carteira:</b> <span id="publicKey"></span></div>
+          <div style="margin-top:8px" class="row">
+            <button class="btn btn-secondary" onclick="copyPublicKey()" style="margin:0;">📋 Copiar chave</button>
+            <button class="btn btn-secondary" onclick="refreshAll()" style="margin:0;">🔄 Atualizar</button>
+          </div>
+        </div>
+
+        <div id="dashStatus" class="status info" style="display:none;"></div>
+      </div>
+
+      <!-- TRANSFER -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <h3>🔀 Transferir EDE</h3>
+          <span class="pill">RPC</span>
+        </div>
+
+        <div class="input-group">
+          <input id="toPublicKey" placeholder="🔑 Chave pública destino (PAYEDE_...)">
+        </div>
+
+        <div class="input-group">
+          <input id="amountEde" type="number" step="0.01" placeholder="💰 Valor em EDE (ex: 1.50)">
+        </div>
+
+        <button class="btn btn-primary" onclick="send()">🚀 Enviar</button>
+
+        <div id="txStatus" class="status info" style="display:none;"></div>
+
+        <div class="small">
+          Dica: EDE usa centavos internamente (integer) para evitar bugs de decimal.
+        </div>
+      </div>
+
+      <!-- (OPCIONAL) "Depósito" DEMO: só para testes -->
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <h3>🧪 Crédito de teste</h3>
+          <span class="pill">DEV</span>
+        </div>
+        <div class="small">
+          Isso é apenas para testes (moeda digital). Em produção, depósito real exigiria integração e validação do provedor.
+        </div>
+        <div class="row" style="margin-top:10px;">
+          <button class="btn btn-secondary" onclick="devCredit(100)" style="margin:0;">+1.00 EDE</button>
+          <button class="btn btn-secondary" onclick="devCredit(1000)" style="margin:0;">+10.00 EDE</button>
+        </div>
+        <div id="devStatus" class="status info" style="display:none;"></div>
+      </div>
+
     </div>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <script>
-    // =============================
-    // ✅ CONFIG SUPABASE (OK)
-    // =============================
+    // =========================
+    // ✅ CONFIGURE AQUI
+    // =========================
     const SUPABASE_URL = 'https://acvzxoysjglaylrsrnmh.supabase.co';
     const SUPABASE_ANON_KEY = 'sb_publishable_wojRa33oQnvD7Q-8MEImLw_ENjObvs4';
-
-    // ✅ NÃO sobrescreve "supabase" (evita TDZ e quebra geral)
     const supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    let usuarioAtual = null;
-    let minhaCarteiraAtiva = null;
-    let realtimeAtivo = false;
+    // IDs locais
+    let sessionUser = null;
+    let myAccountId = null;
+    let myPublicKey = null;
 
-    // ✅ Mostrar erros JS na tela (pra nunca ficar "sem ação")
+    // Mostrar erros JS na tela (Android-friendly)
     window.onerror = function (msg, url, line, col, err) {
-      const el = document.getElementById('statusDebug');
-      if (el) {
-        el.innerHTML = `<div class="status error">
-          ❌ ERRO JS: ${String(msg)}<br>
-          Linha: ${line}:${col}
-        </div>`;
-      }
+      showGlobal(`❌ ERRO JS: ${String(msg)} (linha ${line}:${col})`, 'err');
       console.error('JS ERROR:', msg, url, line, col, err);
       return true;
     };
 
-    document.addEventListener('DOMContentLoaded', async () => {
-      debug('✅ App iniciado. Testando Supabase...');
-
-      gerarQR();
-
-      // teste simples de conectividade (não quebra se tabela não existir)
-      try {
-        const { error } = await supa.from('wallets').select('id').limit(1);
-        if (error) {
-          debug(`⚠️ Supabase respondeu, mas tabela/policy pode estar errada:<br><b>${error.message}</b>`);
-        } else {
-          debug('✅ Supabase OK e tabela wallets respondendo.');
-        }
-      } catch (e) {
-        debug('❌ Falha ao conectar no Supabase: ' + e.message);
-      }
-    });
-
-    function debug(msg) {
-      const el = document.getElementById('statusDebug');
-      if (el) el.innerHTML = `<div class="status info">${msg}</div>`;
+    function show(elId, msg, kind='info') {
+      const el = document.getElementById(elId);
+      if (!el) return;
+      el.style.display = 'block';
+      el.className = 'status ' + (kind === 'ok' ? 'ok' : kind === 'err' ? 'err' : 'info');
+      el.innerHTML = msg;
     }
 
-    // ✅ UUID compatível (Android/WebView)
-    function uuid() {
-      if (window.crypto?.randomUUID) return crypto.randomUUID();
-      return 'xxxxxxxxxxxx4xxxyxxxxxxxxxxxxxxx'.replace(/[xy]/g, c => {
-        const r = (Math.random() * 16) | 0;
-        const v = c === 'x' ? r : (r & 0x3) | 0x8;
-        return v.toString(16);
+    function hide(elId) {
+      const el = document.getElementById(elId);
+      if (!el) return;
+      el.style.display = 'none';
+      el.innerHTML = '';
+    }
+
+    function showGlobal(msg, kind='info') {
+      show('globalStatus', msg, kind);
+      // auto-hide leve
+      setTimeout(() => hide('globalStatus'), 9000);
+    }
+
+    function centsFromEdeString(v) {
+      const n = Number(v);
+      if (!Number.isFinite(n) || n <= 0) return null;
+      return Math.round(n * 100); // 2 casas
+    }
+
+    function formatEdeFromCents(cents) {
+      const n = (Number(cents) || 0) / 100;
+      return n.toFixed(2) + ' EDE';
+    }
+
+    function setScreen(name) {
+      document.getElementById('screenAuth').classList.add('hidden');
+      document.getElementById('screenOnboard').classList.add('hidden');
+      document.getElementById('screenDash').classList.add('hidden');
+      document.getElementById(name).classList.remove('hidden');
+    }
+
+    async function bootstrap() {
+      // Restaura sessão
+      const { data } = await supa.auth.getSession();
+      sessionUser = data?.session?.user ?? null;
+
+      // listener de auth
+      supa.auth.onAuthStateChange(async (_event, newSession) => {
+        sessionUser = newSession?.user ?? null;
+        await route();
       });
+
+      await route();
     }
 
-    // =============================
-    // ✅ CRIAR CARTEIRA
-    // =============================
-    async function novaCarteira() {
-      const nome = document.getElementById('nomeLogin').value.trim();
-      if (!nome) return alert('❌ Informe seu nome!');
+    async function route() {
+      hide('dashStatus'); hide('txStatus'); hide('devStatus');
 
-      debug('⏳ Criando carteira...');
+      if (!sessionUser) {
+        setScreen('screenAuth');
+        return;
+      }
 
-      const walletData = {
-        id: `PAY${Date.now().toString(36).slice(-8)}${Math.random().toString(36).slice(-4)}`,
-        nome,
-        private_key: `PAYEDE_${uuid().replace(/-/g, '')}`,
-        balance: 0,
-        status: 'criada',
-        created_at: new Date().toISOString()
-      };
+      document.getElementById('whoami').textContent = sessionUser.email;
 
+      // tenta achar conta do user
+      const { data, error } = await supa
+        .from('accounts')
+        .select('id, public_key')
+        .limit(1);
+
+      // Se RLS estiver ok, esse select retorna só do próprio usuário
+      if (error) {
+        showGlobal(`⚠️ Erro ao ler carteira: ${error.message}`, 'err');
+        // Ainda assim mostra dash com status
+        setScreen('screenDash');
+        show('dashStatus', `❌ Não consegui ler sua carteira. Verifique RLS/SQL. <br><b>${error.message}</b>`, 'err');
+        return;
+      }
+
+      if (!data || data.length === 0) {
+        // precisa criar carteira
+        setScreen('screenOnboard');
+        return;
+      }
+
+      myAccountId = data[0].id;
+      myPublicKey = data[0].public_key;
+      setScreen('screenDash');
+      await refreshAll();
+    }
+
+    // =========================
+    // AUTH
+    // =========================
+    async function signUp() {
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPass').value.trim();
+      if (!email || password.length < 6) return showGlobal('❌ Informe email e senha (6+).', 'err');
+
+      showGlobal('⏳ Criando conta...', 'info');
+
+      const { error } = await supa.auth.signUp({ email, password });
+      if (error) return showGlobal('❌ ' + error.message, 'err');
+
+      showGlobal('✅ Conta criada! Agora faça login (ou confirme email se exigido).', 'ok');
+    }
+
+    async function signIn() {
+      const email = document.getElementById('authEmail').value.trim();
+      const password = document.getElementById('authPass').value.trim();
+      if (!email || !password) return showGlobal('❌ Informe email e senha.', 'err');
+
+      showGlobal('⏳ Entrando...', 'info');
+
+      const { data, error } = await supa.auth.signInWithPassword({ email, password });
+      if (error) return showGlobal('❌ ' + error.message, 'err');
+
+      sessionUser = data.user;
+      showGlobal('✅ Login OK!', 'ok');
+      await route();
+    }
+
+    async function resetPass() {
+      const email = document.getElementById('authEmail').value.trim();
+      if (!email) return showGlobal('❌ Informe seu email.', 'err');
+
+      const { error } = await supa.auth.resetPasswordForEmail(email);
+      if (error) return showGlobal('❌ ' + error.message, 'err');
+
+      showGlobal('✅ Email de recuperação enviado.', 'ok');
+    }
+
+    async function logout() {
+      await supa.auth.signOut();
+      sessionUser = null;
+      myAccountId = null;
+      myPublicKey = null;
+      showGlobal('🔐 Você saiu.', 'info');
+      setScreen('screenAuth');
+    }
+
+    // =========================
+    // CRIAR CARTEIRA (RPC)
+    // Precisa da função SQL: create_account(p_full_name text)
+    // =========================
+    async function createAccount() {
+      const fullName = document.getElementById('fullName').value.trim();
+      if (!fullName) return showGlobal('❌ Informe seu nome.', 'err');
+
+      showGlobal('⏳ Criando carteira...', 'info');
+
+      const { data, error } = await supa.rpc('create_account', { p_full_name: fullName });
+      if (error) return showGlobal('❌ ' + error.message, 'err');
+
+      // data é array com {account_id, public_key}
+      const row = data?.[0];
+      if (!row) return showGlobal('❌ RPC não retornou dados.', 'err');
+
+      myAccountId = row.account_id;
+      myPublicKey = row.public_key;
+
+      showGlobal('✅ Carteira criada!', 'ok');
+      setScreen('screenDash');
+      await refreshAll();
+    }
+
+    // =========================
+    // DASH: saldo (view)
+    // Precisa da view: account_balances
+    // =========================
+    async function refreshAll() {
+      if (!myAccountId) return;
+
+      show('dashStatus', '⏳ Atualizando saldo...', 'info');
+
+      // pega carteira do user (garante chave atual)
+      const { data: acc, error: e1 } = await supa
+        .from('accounts')
+        .select('id, public_key')
+        .eq('id', myAccountId)
+        .single();
+
+      if (e1) {
+        show('dashStatus', '❌ Erro ao ler conta: ' + e1.message, 'err');
+        return;
+      }
+
+      myPublicKey = acc.public_key;
+      document.getElementById('publicKey').textContent = myPublicKey;
+
+      // pega saldo via view
+      const { data: bal, error: e2 } = await supa
+        .from('account_balances')
+        .select('balance_cents')
+        .eq('account_id', myAccountId)
+        .single();
+
+      if (e2) {
+        show('dashStatus', '❌ Erro ao ler saldo: ' + e2.message, 'err');
+        return;
+      }
+
+      document.getElementById('balanceEde').textContent = formatEdeFromCents(bal.balance_cents);
+      show('dashStatus', '✅ Saldo atualizado.', 'ok');
+      setTimeout(() => hide('dashStatus'), 2500);
+    }
+
+    async function copyPublicKey() {
       try {
-        const { data, error } = await supa
-          .from('wallets')
-          .insert([walletData])
-          .select()
-          .single();
-
-        if (error) {
-          console.error(error);
-          debug('❌ Erro criar: ' + error.message);
-          return alert('❌ Erro criar carteira: ' + error.message);
-        }
-
-        minhaCarteiraAtiva = data;
-        usuarioAtual = data.nome;
-
-        mostrarDashboard();
-        copiarMinhaChave();
-
-        alert(`✅ Carteira criada!\n🆔 ${data.id}\n👤 ${data.nome}`);
-        debug(`✅ Carteira ${data.id} criada com sucesso.`);
-      } catch (e) {
-        console.error(e);
-        debug('❌ Falha geral ao criar: ' + e.message);
-        alert('❌ Erro: ' + e.message);
+        await navigator.clipboard.writeText(myPublicKey || '');
+        showGlobal('✅ Chave copiada!', 'ok');
+      } catch {
+        showGlobal('⚠️ Não consegui copiar automaticamente. Copie manualmente: ' + (myPublicKey || ''), 'info');
       }
     }
 
-    // =============================
-    // ✅ ACESSAR CARTEIRA
-    // =============================
-    async function acessarCarteira() {
-      const nome = document.getElementById('nomeLogin').value.trim();
-      const chave = document.getElementById('chaveLogin').value.trim();
+    // =========================
+    // TRANSFER (RPC atômica)
+    // Precisa da função SQL: transfer(...)
+    // =========================
+    async function send() {
+      const toKey = document.getElementById('toPublicKey').value.trim();
+      const cents = centsFromEdeString(document.getElementById('amountEde').value);
 
-      if (!nome && !chave) return alert('❌ Informe nome OU chave!');
+      if (!toKey.startsWith('PAYEDE_')) return show('txStatus', '❌ Chave destino inválida.', 'err');
+      if (!cents) return show('txStatus', '❌ Valor inválido.', 'err');
 
-      debug('⏳ Buscando carteira...');
+      const idem = 'tx_' + Date.now() + '_' + Math.random().toString(16).slice(2);
 
-      try {
-        let query = supa.from('wallets').select('*');
+      show('txStatus', '⏳ Enviando (RPC)...', 'info');
 
-        if (chave) query = query.eq('private_key', chave).limit(1);
-        else query = query.eq('nome', nome).limit(1);
-
-        const { data, error } = await query;
-
-        if (error) {
-          console.error(error);
-          debug('❌ Erro busca: ' + error.message);
-          return alert('❌ Erro busca: ' + error.message);
-        }
-
-        if (!data || data.length === 0) {
-          debug('❌ Carteira não encontrada.');
-          return alert('❌ Carteira não encontrada!');
-        }
-
-        minhaCarteiraAtiva = data[0];
-        usuarioAtual = minhaCarteiraAtiva.nome;
-
-        mostrarDashboard();
-
-        debug(`✅ Carteira carregada: ${minhaCarteiraAtiva.id}`);
-      } catch (e) {
-        console.error(e);
-        debug('❌ Falha geral no acesso: ' + e.message);
-        alert('❌ Erro: ' + e.message);
-      }
-    }
-
-    // =============================
-    // ✅ ATIVAR (+10)
-    // =============================
-    async function ativar() {
-      if (!minhaCarteiraAtiva?.id) return alert('❌ Nenhuma carteira ativa!');
-      const txid = document.getElementById('txidPicPay').value.trim();
-      if (!txid || txid.length < 10) return alert('❌ TXID inválido (10+ chars)!');
-
-      try {
-        const novoSaldo = 10;
-
-        const { data, error } = await supa
-          .from('wallets')
-          .update({ balance: novoSaldo, status: 'ativa' })
-          .eq('id', minhaCarteiraAtiva.id)
-          .select()
-          .single();
-
-        if (error) throw error;
-
-        minhaCarteiraAtiva = data;
-
-        document.getElementById('meuSaldo').textContent = `${parseFloat(data.balance || 0).toFixed(2)} EDE`;
-        document.getElementById('secaoAtivar').style.display = 'none';
-        document.getElementById('statusTransferencia').innerHTML =
-          `<div class="status success">✅ +10 EDE ativados!</div>`;
-
-        debug('✅ Ativação concluída.');
-        alert('✅ +10 EDE ativados!');
-      } catch (e) {
-        console.error(e);
-        debug('❌ Erro ativação: ' + e.message);
-        alert('❌ Erro ativação: ' + e.message);
-      }
-    }
-
-    // =============================
-    // ✅ TRANSFERIR
-    // =============================
-    async function transferir() {
-      if (!minhaCarteiraAtiva?.id) return alert('❌ Nenhuma carteira ativa!');
-
-      const chaveDest = document.getElementById('chaveDestino').value.trim();
-      const valor = parseFloat(document.getElementById('valorTransferir').value);
-
-      if (!chaveDest) return alert('❌ Informe a chave destino!');
-      if (valor <= 0 || !Number.isFinite(valor)) return alert('❌ Valor inválido!');
-
-      const saldoAtual = parseFloat(minhaCarteiraAtiva.balance || 0);
-      if (valor > saldoAtual) return alert('❌ Saldo insuficiente!');
-
-      document.getElementById('statusTransferencia').innerHTML =
-        `<div class="status info">⏳ Transferindo...</div>`;
-
-      try {
-        // Busca destino
-        const { data: destino, error: errDest } = await supa
-          .from('wallets')
-          .select('id, balance')
-          .eq('private_key', chaveDest)
-          .single();
-
-        if (errDest || !destino) {
-          document.getElementById('statusTransferencia').innerHTML =
-            `<div class="status error">❌ Chave destino inválida!</div>`;
-          return;
-        }
-
-        const origemNovoSaldo = saldoAtual - valor;
-        const destinoNovoSaldo = parseFloat(destino.balance || 0) + valor;
-
-        // Atualiza origem
-        const { error: errOrigem } = await supa
-          .from('wallets')
-          .update({ balance: origemNovoSaldo })
-          .eq('id', minhaCarteiraAtiva.id);
-
-        if (errOrigem) throw errOrigem;
-
-        // Atualiza destino
-        const { error: errDestinoUp } = await supa
-          .from('wallets')
-          .update({ balance: destinoNovoSaldo })
-          .eq('id', destino.id);
-
-        if (errDestinoUp) throw errDestinoUp;
-
-        // Atualiza UI/local
-        minhaCarteiraAtiva.balance = origemNovoSaldo;
-        document.getElementById('meuSaldo').textContent = `${origemNovoSaldo.toFixed(2)} EDE`;
-
-        document.getElementById('statusTransferencia').innerHTML =
-          `<div class="status success">✅ Transferido ${valor.toFixed(2)} EDE!</div>`;
-
-        document.getElementById('chaveDestino').value = '';
-        document.getElementById('valorTransferir').value = '';
-
-        debug(`✅ Transferência concluída: ${valor.toFixed(2)} EDE.`);
-      } catch (e) {
-        console.error(e);
-        document.getElementById('statusTransferencia').innerHTML =
-          `<div class="status error">❌ Erro: ${e.message}</div>`;
-        debug('❌ Erro na transferência: ' + e.message);
-      }
-    }
-
-    // =============================
-    // ✅ DASHBOARD
-    // =============================
-    function mostrarDashboard() {
-      document.getElementById('telaLogin').classList.add('hidden');
-      document.getElementById('dashboard').classList.remove('hidden');
-
-      document.getElementById('nomeUsuarioDash').textContent = usuarioAtual || '';
-      document.getElementById('minhaWalletId').textContent = minhaCarteiraAtiva?.id || '';
-      document.getElementById('minhaChaveInput').value = minhaCarteiraAtiva?.private_key || '';
-
-      const b = parseFloat(minhaCarteiraAtiva?.balance || 0);
-      document.getElementById('meuSaldo').textContent = `${b.toFixed(2)} EDE`;
-
-      document.getElementById('secaoAtivar').style.display = (b === 0) ? 'block' : 'none';
-
-      // Realtime (opcional)
-      conectarRealtime();
-    }
-
-    async function conectarRealtime() {
-      if (realtimeAtivo) return;
-      if (!minhaCarteiraAtiva?.id) return;
-
-      realtimeAtivo = true;
-
-      supa.channel('wallets_realtime')
-        .on('postgres_changes',
-          { event: 'UPDATE', schema: 'public', table: 'wallets' },
-          (payload) => {
-            if (payload?.new?.id === minhaCarteiraAtiva.id) {
-              const b = parseFloat(payload.new.balance || 0);
-              minhaCarteiraAtiva.balance = b;
-              document.getElementById('meuSaldo').textContent = `${b.toFixed(2)} EDE`;
-              debug('🔄 Saldo atualizado em tempo real.');
-            }
-          }
-        )
-        .subscribe((status) => {
-          console.log('Realtime status:', status);
-        });
-    }
-
-    function copiarMinhaChave() {
-      const chave = document.getElementById('minhaChaveInput').value;
-      navigator.clipboard.writeText(chave).then(() => {
-        debug('✅ Chave copiada!');
-        alert('✅ Chave copiada!');
-      }).catch(() => {
-        // fallback
-        debug('⚠️ Não deu para copiar automaticamente. Copie manualmente.');
-        alert('⚠️ Copie manualmente: ' + chave);
+      const { data, error } = await supa.rpc('transfer', {
+        p_from_public_key: myPublicKey,
+        p_to_public_key: toKey,
+        p_amount_cents: cents,
+        p_idempotency_key: idem
       });
-    }
 
-    function sair() {
-      document.getElementById('dashboard').classList.add('hidden');
-      document.getElementById('telaLogin').classList.remove('hidden');
-
-      document.getElementById('nomeLogin').value = '';
-      document.getElementById('chaveLogin').value = '';
-
-      usuarioAtual = null;
-      minhaCarteiraAtiva = null;
-      realtimeAtivo = false;
-
-      debug('🔐 Você saiu.');
-    }
-
-    function gerarQR() {
-      try {
-        QRCode.toCanvas(
-          document.getElementById('qrPicPay'),
-          'picpay://pay?username=jaedesystemint&amount=2.00'
-        );
-      } catch (e) {
-        console.warn(e);
-        const c = document.getElementById('qrPicPay');
-        if (c) c.outerHTML = '<div style="text-align:center;color:#333;">QR PicPay: R$2,00 @jaedesystemint</div>';
+      if (error) {
+        // erros comuns: insufficient_funds, to_account_not_found, etc
+        return show('txStatus', '❌ ' + error.message, 'err');
       }
+
+      const row = data?.[0];
+      show('txStatus', `✅ Transferência concluída!<br>ID: <code>${row.transfer_id}</code><br>Status: <b>${row.status}</b>`, 'ok');
+
+      document.getElementById('toPublicKey').value = '';
+      document.getElementById('amountEde').value = '';
+
+      await refreshAll();
     }
+
+    // =========================
+    // DEV CREDIT (opcional)
+    // Para funcionar, crie um RPC DEV ou rode SQL manualmente.
+    // Aqui vamos fazer via RPC "dev_credit" se você quiser criar.
+    // =========================
+    async function devCredit(amountCents) {
+      show('devStatus', '⏳ Creditando (DEV)...', 'info');
+
+      // Você pode criar essa função no SQL se quiser:
+      // create function dev_credit(p_public_key text, p_amount_cents bigint) ...
+      const { data, error } = await supa.rpc('dev_credit', {
+        p_public_key: myPublicKey,
+        p_amount_cents: amountCents
+      });
+
+      if (error) {
+        return show('devStatus', `⚠️ DEV credit não configurado no banco.<br><b>${error.message}</b><br>
+        Se quiser, eu te mando o SQL da função <code>dev_credit</code>.`, 'err');
+      }
+
+      show('devStatus', '✅ Crédito aplicado!', 'ok');
+      await refreshAll();
+    }
+
+    // start
+    bootstrap();
   </script>
 </body>
 </html>
